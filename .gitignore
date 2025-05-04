@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Env
+.env
+.env.*
+
+# Virtualenv
+venv/
+env/
+ENV/
+.venv/
+
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage / test outputs
+htmlcov/
+.coverage
+.tox/
+.nox/
+.cache
+pytest_cache/
+
+# Byte-compiled
+*$py.class
+
+# Mypy / Pylint / Pytest
+.mypy_cache/
+.pytest_cache/
+.pylint.d/
