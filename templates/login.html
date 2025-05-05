@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="icon" href="/static/img/store_icon.png" type="image/x-icon">
 </head>
 <body style="background-color: #f2ebd9;">
 
-
 <section class="h-screen flex items-center justify-center">
   <div class="flex w-full max-w-screen-lg">
-
     <div class="w-full md:w-1/2 bg-[#f2ebd9] p-8">
       <div class="flex items-center justify-center mb-6 space-x-3">
         <img src="/static/img/logo_zlagoda.png" alt="Zlagoda Logo" class="w-10 h-10">
@@ -22,19 +21,15 @@
         <form method="POST" class="space-y-6">
             {% csrf_token %}
           <h3 class="text-3xl font-medium">Log in</h3>
-
-
           <div class="mb-4">
             <label for="login" class="block text-lg font-medium">Employee role</label>
             <input type="text" id="login" name="login" class="w-full px-4 py-3 border border-gray-300 rounded-md" required>
           </div>
 
-
           <div class="mb-4">
             <label for="password" class="block text-lg font-medium">Password</label>
             <input type="password" id="password" name="password" class="w-full px-4 py-3 border border-gray-300 rounded-md" required>
           </div>
-
 
           {% if messages %}
             <div class="bg-red-500 text-white p-3 rounded mb-4">
@@ -44,24 +39,19 @@
             </div>
           {% endif %}
 
-
           <div>
             <button type="submit" class="w-full bg-yellow-900 text-white py-3 rounded-md hover:bg-yellow-800">
               Login
             </button>
           </div>
-
         </form>
       </div>
     </div>
-
-
     <div class="hidden md:block w-1/2">
       <img src="/static/img/cashier_pic.png" alt="Login image" class="w-full h-full object-cover"
         style="box-shadow: 10px 0 20px rgba(0, 0, 0, 0.3);">
     </div>
   </div>
 </section>
-
 </body>
 </html>
