@@ -1,6 +1,7 @@
 import hashlib
 import psycopg2
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from decouple import config
 
 def hash_password(password):
@@ -8,8 +9,13 @@ def hash_password(password):
 
 def check_login(request):
     if request.method == 'POST':
-        login = request.POST['login']
-        password = request.POST['password']
+        login = request.POST.get('login')
+        password = request.POST.get('password')
+
+        if not login or not password:
+            messages.error(request, 'Please fill in both fields.')
+            return render(request, 'login.html', {'login': login, 'password': password})
+
         hashed_password = hash_password(password)
 
         conn = psycopg2.connect(
@@ -39,8 +45,8 @@ def check_login(request):
             elif result[1] in ['cashier1', 'cashier2', 'cashier3', 'cashier4']:
                 return redirect('cashier_dashboard')
         else:
-            return render(request, 'login.html',
-                {'error': 'Invalid login or password or you are not authorized to access the system.'})
+            messages.error(request, 'Invalid login or password or you are not authorized to access the system.')
+
     return render(request, 'login.html')
 
 
