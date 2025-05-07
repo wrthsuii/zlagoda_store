@@ -51,8 +51,8 @@ def check_login(request):
 
 
 def manager_dashboard(request):
-    return render(request, 'manager_dashboard.html')
+    return render(request, 'templates_manager/manager_dashboard.html')
 
 
 def cashier_dashboard(request):
-    return render(request, 'cashier_dashboard.html')
+    return render(request, 'templates_cashier/cashier_dashboard.html')
