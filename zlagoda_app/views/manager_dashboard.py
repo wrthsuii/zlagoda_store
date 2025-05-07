@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.db import connection
+from django.core.paginator import Paginator
 
 def manage_employees(request):
     """
@@ -8,6 +9,7 @@ def manage_employees(request):
     відсортованих за прізвищем;
     """
     role_filter = request.GET.get('empl_role', '')
+    page_number = request.GET.get('page', 1)
 
     query = "SELECT * FROM Employee"
     params = []
@@ -37,9 +39,13 @@ def manage_employees(request):
         }
         for row in rows
     ]
+
+    paginator = Paginator(employees, 10)  # по 10 працівників на сторінку
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'employees': employees,
         'role_filter': role_filter,
+        'page_obj': page_obj,
     }
     return render(request, 'templates_manager/manage_employees.html', context)
 
@@ -88,7 +94,21 @@ def edit_employee(request):
                 data['city'], data['street'], data['zip_code'],
                 data['id_employee']
             ])
-    return redirect("manage_employees")
+    return redirect('manage_employees')
+
 
 def delete_employee(request):
-    pass
+    """
+    3. Видаляти дані про працівників;
+    """
+    if request.method == 'POST':
+        id_employee = request.POST['id_employee']
+
+        query = """
+        DELETE FROM Employee
+        WHERE id_employee = %s;
+        """
+        with connection.cursor() as c:
+            c.execute(query, [id_employee])
+
+    return redirect('manage_employees')
