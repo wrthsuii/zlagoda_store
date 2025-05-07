@@ -152,7 +152,7 @@
                         <td class="py-2 px-3">{{ e.street }}</td>
                         <td class="py-2 px-3">{{ e.zip_code }}</td>
                         <td class="py-2 px-3 flex space-x-1">
-                            <button onclick="openEditModal({{ e.id_employee }})" class="edit-btn action-btn" title="Edit">
+                            <button onclick="openEditModal('{{ e.id_employee }}')" class="edit-btn action-btn" title="Edit">
                                 <i class="fas fa-pencil-alt"></i>
                             </button>
                             <button onclick="openDeleteModal({{ e.id_employee }})" class="delete-btn action-btn" title="Delete">
