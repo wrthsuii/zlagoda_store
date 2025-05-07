@@ -89,3 +89,6 @@ def edit_employee(request):
                 data['id_employee']
             ])
     return redirect("manage_employees")
+
+def delete_employee(request):
+    pass

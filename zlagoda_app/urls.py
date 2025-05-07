@@ -10,4 +10,5 @@ urlpatterns = [
     path('employees/', manager_dashboard.manage_employees, name='manage_employees'),
     path("add_employee/", manager_dashboard.add_employee, name="add_employee"),
     path("edit_employee/", manager_dashboard.edit_employee, name="edit_employee"),
+    path("delete_employee/", manager_dashboard.delete_employee, name="delete_employee"),
 ]
