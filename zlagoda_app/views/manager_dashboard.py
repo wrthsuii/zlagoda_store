@@ -418,3 +418,97 @@ def delete_product(request):
             c.execute(query, [id_product])
 
     return redirect('manage_product_database')
+
+#===========STORE PRODUCTS===========
+
+def manage_store_products(request):
+    """
+    10. Отримати інформацію про усі товари у магазині, відсортовані за кількістю;
+    """
+    page_number = request.GET.get('page', 1)
+
+    query = """
+    SELECT * 
+    FROM Store_Product
+    ORDER BY products_number DESC;
+    """
+    params = []
+
+    with connection.cursor() as c:
+        c.execute(query, params)
+        rows = c.fetchall()
+
+    store_products = [
+        {
+            'upc': row[0],
+            'upc_prom': row[1],
+            'id_product': row[2],
+            'selling_price': row[3],
+            'products_number': row[4],
+            'promotional_product': row[5]
+        }
+        for row in rows
+    ]
+
+    paginator = Paginator(store_products, 10)
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+    }
+    return render(request, "templates_manager/manage_store_products.html", context)
+
+def add_store_product(request):
+    """
+    1. Додавати нові дані про товари в магазині;
+    """
+    if request.method == "POST":
+        data = request.POST
+        query = """
+        INSERT INTO Store_Product (UPC, UPC_prom, id_product, 
+        selling_price, products_number, promotional_product)
+        VALUES (%s, %s, %s, %s, %s, %s);
+        """
+        with connection.cursor() as c:
+            c.execute(query, [
+                data['UPC'], data.get('UPC_prom'),
+                data['id_product'], data['selling_price'],
+                data['products_number'], data['promotional_product']
+
+            ])
+        return redirect("manage_store_products")
+
+def edit_store_product(request):
+    """
+    2. Редагувати дані про товари в магазині;
+    """
+    if request.method == "POST":
+        data = request.POST
+        query = """
+         UPDATE Store_Product
+         SET UPC_prom = %s, id_product = %s, selling_price = %s, products_number = %s, promotional_product = %s
+         WHERE UPC = %s
+        """
+        with connection.cursor() as c:
+            c.execute(query, [
+                data.get('UPC_prom'), data['id_product'], data['selling_price'],
+                data['products_number'], data['promotional_product'], data['UPC']
+            ])
+    return redirect('manage_store_products')
+
+
+def delete_store_product(request):
+    """
+    3. Видаляти дані про товари в магазині;
+    """
+    if request.method == 'POST':
+        UPC = request.POST['UPC']
+
+        query = """
+        DELETE FROM Store_Product
+        WHERE UPC = %s;
+        """
+        with connection.cursor() as c:
+            c.execute(query, [UPC])
+
+    return redirect('manage_store_products')

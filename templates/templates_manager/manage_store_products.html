@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manager Space - Product Management</title>
+    <title>Manager Space - Store Product Management</title>
     <link rel="icon" href="/img/manager_icon.png" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -107,39 +107,43 @@
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold mb-8 text-center">PRODUCT MANAGEMENT</h1>
+        <h1 class="text-3xl font-bold mb-8 text-center">STORE PRODUCT MANAGEMENT</h1>
 
         <!-- Filters and Actions -->
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <button onclick="openModal('addProductModal')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-                <i class="fas fa-plus mr-2"></i>Add new product
+            <button onclick="openModal('addStoreProductModal')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                <i class="fas fa-plus mr-2"></i>Add new store product
             </button>
         </div>
 
-        <!-- Product Table -->
+        <!-- Store product Table -->
         <div class="table-container bg-white shadow-md rounded-lg overflow-hidden">
             <table class="min-w-full compact-table">
                 <thead class="bg-gray-200">
                     <tr>
+                        <th class="py-2 px-3 text-left">UPC</th>
+                        <th class="py-2 px-3 text-left">UPC (promotional)</th>
                         <th class="py-2 px-3 text-left">ID</th>
-                        <th class="py-2 px-3 text-left">Category No</th>
-                        <th class="py-2 px-3 text-left">Name</th>
-                        <th class="py-2 px-3 text-left">Characteristics</th>
+                        <th class="py-2 px-3 text-left">Price</th>
+                        <th class="py-2 px-3 text-left">Amount</th>
+                        <th class="py-2 px-3 text-left">Promotional</th>
                         <th class="py-2 px-3 text-left action-cell">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for p in page_obj %}
-                    <tr class="product-row border-t">
+                    <tr class="store-product-row border-t">
+                        <td class="py-2 px-3">{{ p.upc }}</td>
+                        <td class="py-2 px-3">{{ p.upc_prom|default:"-" }}</td>
                         <td class="py-2 px-3">{{ p.id_product }}</td>
-                        <td class="py-2 px-3">{{ p.category_number }}</td>
-                        <td class="py-2 px-3">{{ p.product_name }}</td>
-                        <td class="py-2 px-3">{{ p.characteristics }}</td>
+                        <td class="py-2 px-3">{{ p.selling_price|floatformat:0 }} UAH</td>
+                        <td class="py-2 px-3">{{ p.products_number }}</td>
+                        <td class="py-2 px-3">{{ p.promotional_product }}</td>
                         <td class="py-2 px-3 flex space-x-1">
-                            <button onclick="openEditModal('{{ p.id_product }}')" class="edit-btn action-btn" title="Edit">
+                            <button onclick="openEditModal('{{ p.upc }}')" class="edit-btn action-btn" title="Edit">
                                 <i class="fas fa-pencil-alt"></i>
                             </button>
-                            <button onclick="openDeleteModal('{{ p.id_product }}')" class="delete-btn action-btn" title="Delete">
+                            <button onclick="openDeleteModal('{{ p.upc }}')" class="delete-btn action-btn" title="Delete">
                                 <i class="fas fa-times"></i>
                             </button>
                         </td>
@@ -182,34 +186,42 @@
             </nav>
         </div>
 
-  <!-- Add Product Modal -->
-    <div id="addProductModal" class="modal">
+  <!-- Add Store Product Modal -->
+    <div id="addStoreProductModal" class="modal">
         <div class="modal-content">
             <h2 class="text-xl font-semibold mb-4">
-                <i class="fas fa-user-plus mr-2"></i>Add new product
+                <i class="fas fa-user-plus mr-2"></i>Add new store product
             </h2>
-            <form action="{% url 'add_product' %}" method="POST">
+            <form action="{% url 'add_store_product' %}" method="POST">
                 {% csrf_token %}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="upc" class="block mb-1">UPC</label>
+                        <input type="text" id="upc" name="UPC" class="w-full px-3 py-2 border rounded" required>
+                    </div>
+                    <div>
+                        <label for="UPC_prom" class="block mb-1">UPC(promotional)</label>
+                        <input type="text" id="UPC_prom" name="UPC_prom" class="w-full px-3 py-2 border rounded">
+                    </div>
                     <div>
                         <label for="id_product" class="block mb-1">ID</label>
                         <input type="number" id="id_product" name="id_product" class="w-full px-3 py-2 border rounded" required>
                     </div>
                     <div>
-                        <label for="category_number" class="block mb-1">Category No</label>
-                        <input type="number" id="category_number" name="category_number" class="w-full px-3 py-2 border rounded" required>
+                        <label for="selling_price" class="block mb-1">Price</label>
+                        <input type="number" id="selling_price" name="selling_price" class="w-full px-3 py-2 border rounded" required>
                     </div>
                     <div>
-                        <label for="product_name" class="block mb-1">Name</label>
-                        <input type="text" id="product_name" name="product_name" class="w-full px-3 py-2 border rounded" required>
+                        <label for="products_number" class="block mb-1">Amount</label>
+                        <input type="number" id="products_number" name="products_number" class="w-full px-3 py-2 border rounded" required>
                     </div>
                     <div>
-                        <label for="characteristics" class="block mb-1">Characteristics</label>
-                        <input type="text" id="characteristics" name="characteristics" class="w-full px-3 py-2 border rounded" required>
+                        <label for="promotional_product" class="block mb-1">Promotional</label>
+                        <input type="checkbox" id="promotional_product" name="promotional_product" class="w-full px-3 py-2 border rounded" required>
                     </div>
                 </div>
                 <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('addProductModal')" class="px-4 py-2 bg-gray-300 rounded">
+                    <button type="button" onclick="closeModal('addStoreProductModal')" class="px-4 py-2 bg-gray-300 rounded">
                         <i class="fas fa-times mr-1"></i>Cancel
                     </button>
                     <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">
@@ -220,34 +232,45 @@
         </div>
     </div>
 
-    <!-- Edit Product Modal -->
-    <div id="editProductModal" class="modal">
+    <!-- Edit Store Product Modal -->
+    <div id="editStoreProductModal" class="modal">
         <div class="modal-content">
             <h2 class="text-xl font-semibold mb-4">
-                <i class="fas fa-user-edit mr-2"></i>Edit product
+                <i class="fas fa-user-edit mr-2"></i>Edit store product
             </h2>
-            <form action="{% url 'edit_product' %}" method="POST">
+            <form action="{% url 'edit_store_product' %}" method="POST">
                 {% csrf_token %}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                   <div>
+                        <label for="edit_upc" class="block mb-1">UPC</label>
+                        <input type="text" id="edit_upc" name="UPC" class="w-full px-3 py-2 border rounded" required>
+                   </div>
+                   <div>
+                        <label for="edit_upc_prom" class="block mb-1">UPC(promotional)</label>
+                        <input type="text" id="edit_upc_prom" name="UPC_prom" class="w-full px-3 py-2 border rounded">
+                   </div>
                    <div>
                         <label for="edit_id_product" class="block mb-1">ID</label>
                         <input type="number" id="edit_id_product" name="id_product" class="w-full px-3 py-2 border rounded" required>
                     </div>
                     <div>
-                        <label for="edit_category_number" class="block mb-1">Category No</label>
-                        <input type="number" id="edit_category_number" name="category_number" class="w-full px-3 py-2 border rounded" required>
+                        <label for="edit_selling_price" class="block mb-1">Price</label>
+                        <input type="number" id="edit_selling_price" name="selling_price" class="w-full px-3 py-2 border rounded" required>
                     </div>
                     <div>
-                        <label for="edit_product_name" class="block mb-1">Name</label>
-                        <input type="text" id="edit_product_name" name="product_name" class="w-full px-3 py-2 border rounded" required>
+                        <label for="edit_products_number" class="block mb-1">Amount</label>
+                        <input type="number" id="edit_products_number" name="products_number" class="w-full px-3 py-2 border rounded" required>
                     </div>
                     <div>
-                        <label for="edit_characteristics" class="block mb-1">Characteristics</label>
-                        <input type="text" id="edit_characteristics" name="characteristics" class="w-full px-3 py-2 border rounded" required>
+                        <label for="edit_promotional" class="block mb-1">Promotional</label>
+                        <select id="edit_promotional" name="promotional_product" class="w-full px-3 py-2 border rounded" required>
+                            <option value="manager">True</option>
+                            <option value="cashier">False</option>
+                        </select>
                     </div>
                 </div>
                 <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('editProductModal')" class="px-4 py-2 bg-gray-300 rounded">
+                    <button type="button" onclick="closeModal('editStoreProductModal')" class="px-4 py-2 bg-gray-300 rounded">
                         <i class="fas fa-times mr-1"></i>Cancel
                     </button>
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">
@@ -258,18 +281,18 @@
         </div>
     </div>
 
-    <!-- Delete Product Modal -->
-    <div id="deleteProductModal" class="modal">
+    <!-- Delete Store Product Modal -->
+    <div id="deleteStoreProductModal" class="modal">
         <div class="modal-content">
             <h2 class="text-xl font-semibold mb-4">
-                <i class="fas fa-user-times mr-2"></i>Delete product
+                <i class="fas fa-user-times mr-2"></i>Delete store product
             </h2>
-            <p class="mb-4">Are you sure you want to delete this product? This action cannot be undone.</p>
-            <form action="{% url 'delete_product' %}" method="POST">
+            <p class="mb-4">Are you sure you want to delete this store product? This action cannot be undone.</p>
+            <form action="{% url 'delete_store_product' %}" method="POST">
                 {% csrf_token %}
-                <input type="hidden" id="delete_id_product" name="id_product">
+                <input type="hidden" id="delete_upc" name="upc">
                 <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('deleteProductModal')" class="px-4 py-2 bg-gray-300 rounded">
+                    <button type="button" onclick="closeModal('deleteStoreProductModal')" class="px-4 py-2 bg-gray-300 rounded">
                         <i class="fas fa-times mr-1"></i>Cancel
                     </button>
                     <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded">
@@ -309,13 +332,13 @@
         }
 
         function openEditModal(id) {
-            document.getElementById('edit_id_product').value = id;
-            openModal('editProductModal');
+            document.getElementById('edit_upc').value = id;
+            openModal('editStoreProductModal');
         }
 
         function openDeleteModal(id) {
-            document.getElementById('delete_id_product').value = id;
-            openModal('deleteProductModal');
+            document.getElementById('delete_upc').value = id;
+            openModal('deleteStoreProductModal');
         }
 
         window.onclick = function(event) {

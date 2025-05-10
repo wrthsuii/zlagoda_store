@@ -24,5 +24,10 @@ urlpatterns = [
     path("add_product/", manager_dashboard.add_product, name="add_product"),
     path("edit_product/", manager_dashboard.edit_product, name="edit_product"),
     path("delete_product/", manager_dashboard.delete_product, name="delete_product"),
+    path("store_products/", manager_dashboard.manage_store_products, name="manage_store_products"),
+    path("add_store_product/", manager_dashboard.add_store_product, name="add_store_product"),
+    path("edit_store_product/", manager_dashboard.edit_store_product, name="edit_store_product"),
+    path("delete_store_product/", manager_dashboard.delete_store_product, name="delete_store_product"),
+
 
 ]
