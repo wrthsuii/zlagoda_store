@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
-from django.db import connection
+from django.db import connection, IntegrityError
 from django.core.paginator import Paginator
+from django.contrib import messages
 
 #===========EMPLOYEES===========
 def manage_employees(request):
@@ -12,7 +13,10 @@ def manage_employees(request):
     role_filter = request.GET.get('empl_role', '')
     page_number = request.GET.get('page', 1)
 
-    query = "SELECT * FROM Employee"
+    query = """
+    SELECT * 
+    FROM Employee
+    """
     params = []
     if role_filter:
         query += " WHERE empl_role = %s"
@@ -48,7 +52,7 @@ def manage_employees(request):
         'role_filter': role_filter,
         'page_obj': page_obj,
     }
-    return render(request, 'templates_manager/manage_employees.html', context)
+    return render(request, "manage_employee", context)
 
 
 def add_employee(request):
@@ -125,7 +129,10 @@ def manage_customer_cards(request):
     percent_filter = request.GET.get('percent', '')
     page_number = request.GET.get('page', 1)
 
-    query = "SELECT * FROM Customer_Card"
+    query = """
+    SELECT * 
+    FROM Customer_Card
+    """
     params = []
     if percent_filter:
         query += " WHERE percent = %s"
@@ -219,3 +226,195 @@ def delete_customer_card(request):
             c.execute(query, [card_number])
 
     return redirect('manage_customer_cards')
+
+#===========CATEGORIES===========
+
+def manage_categories(request):
+    """
+    8. Отримати інформацію про усі категорії, відсортовані за назвою;
+    """
+    page_number = request.GET.get('page', 1)
+
+    query = """
+    SELECT * 
+    FROM Category
+    ORDER BY category_name;
+    """
+    params = []
+
+    with connection.cursor() as c:
+        c.execute(query, params)
+        rows = c.fetchall()
+
+    categories = [
+        {
+            'category_number': row[0],
+            'category_name': row[1]
+        }
+        for row in rows
+    ]
+
+    paginator = Paginator(categories, 10)
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+    }
+    return render(request, 'templates_manager/manage_categories.html', context)
+
+
+def add_category(request):
+    """
+    1. Додавати нові дані про категорії;
+    """
+    if request.method == "POST":
+        data = request.POST
+        query = """
+        INSERT INTO Category (category_number, category_name)
+        VALUES (%s, %s);
+        """
+        with connection.cursor() as c:
+            c.execute(query, [
+                data['category_number'], data['category_name']
+            ])
+        return redirect("manage_categories")
+
+
+def edit_category(request):
+    """
+    2. Редагувати дані про категорії;
+    """
+    if request.method == "POST":
+        data = request.POST
+        query = """
+         UPDATE Category
+         SET category_name = %s
+         WHERE category_number = %s
+        """
+        with connection.cursor() as c:
+            c.execute(query, [
+                data['category_name'], data['category_number']
+            ])
+    return redirect('manage_categories')
+
+
+def delete_category(request):
+    """
+    3. Видаляти дані про категорії;
+    """
+    if request.method == 'POST':
+        category_number = request.POST['category_number']
+
+        query = """
+        DELETE FROM Category
+        WHERE category_number = %s;
+        """
+        with connection.cursor() as c:
+            c.execute(query, [category_number])
+
+    return redirect('manage_categories')
+
+#===========PRODUCTS===========
+
+def manage_products(request):
+    return render(request, 'templates_manager/manage_products.html')
+
+def manage_product_database(request):
+    """
+    9. Отримати інформацію про усі товари, відсортовані за назвою;
+    """
+    page_number = request.GET.get('page', 1)
+
+    query = """
+    SELECT * 
+    FROM Product
+    ORDER BY product_name;
+    """
+    params = []
+
+    with connection.cursor() as c:
+        c.execute(query, params)
+        rows = c.fetchall()
+
+    products = [
+        {
+            'id_product': row[0],
+            'category_number': row[1],
+            'product_name': row[2],
+            'characteristics': row[3]
+        }
+        for row in rows
+    ]
+
+    paginator = Paginator(products, 10)
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+    }
+    return render(request, "templates_manager/manage_db_products.html", context)
+
+def add_product(request):
+    """
+    1. Додавати нові дані про товари;
+    """
+    if request.method == "POST":
+        data = request.POST
+        try:
+            with connection.cursor() as c:
+                c.execute("SELECT 1 FROM category WHERE category_number = %s", [data['category_number']])
+                if not c.fetchone():
+                    messages.error(request, "Error: The selected category does not exist")
+                    return redirect("manage_product_database")
+
+                query = """
+                INSERT INTO Product (id_product, category_number, product_name, characteristics)
+                VALUES (%s, %s, %s, %s);
+                """
+                c.execute(query, [
+                    data['id_product'],
+                    data['category_number'],
+                    data['product_name'],
+                    data['characteristics']
+                ])
+            return redirect("manage_product_database")
+
+        except IntegrityError as e:
+            if 'foreign key' in str(e).lower():
+                messages.error(request, "Error: The selected category does not exist")
+            return redirect("manage_product_database")
+
+def edit_product(request):
+    """
+    2. Редагувати дані про товари;
+    """
+    if request.method == "POST":
+        data = request.POST
+        query = """
+         UPDATE Product
+         SET category_number = %s, product_name = %s, characteristics = %s
+         WHERE id_product = %s
+        """
+        with connection.cursor() as c:
+            c.execute(query, [
+                data['category_number'], data['product_name'],
+                data['characteristics'], data['id_product']
+            ])
+    return redirect('manage_product_database')
+
+
+def delete_product(request):
+    """
+    3. Видаляти дані про товари;
+    """
+    if request.method == 'POST':
+        id_product = request.POST['id_product']
+
+        query = """
+        DELETE FROM Product
+        WHERE id_product = %s;
+        """
+        with connection.cursor() as c:
+            c.execute(query, [id_product])
+
+    return redirect('manage_product_database')
