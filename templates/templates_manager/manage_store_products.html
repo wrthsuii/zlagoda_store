@@ -109,12 +109,24 @@
     <div class="max-w-7xl mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold mb-8 text-center">STORE PRODUCT MANAGEMENT</h1>
 
-        <!-- Filters and Actions -->
+    <!-- Filters and Actions -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <form method="get" class="flex items-center">
+            <label class="text-lg font-medium mr-2">
+                Promotional:
+                <select name="promotional_product" onchange="this.form.submit()" class="ml-2 py-1 px-3 rounded border border-gray-300">
+                    <option value="" {% if prom_filter == '' %}selected{% endif %}>All</option>
+                    <option value="True" {% if prom_filter == 'True' %}selected{% endif %}>True</option>
+                    <option value="False" {% if prom_filter == 'False' %}selected{% endif %}>False</option>
+                </select>
+            </label>
+        </form>
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <button onclick="openModal('addStoreProductModal')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
                 <i class="fas fa-plus mr-2"></i>Add new store product
             </button>
         </div>
+    </div>
 
         <!-- Store product Table -->
         <div class="table-container bg-white shadow-md rounded-lg overflow-hidden">
@@ -124,6 +136,7 @@
                         <th class="py-2 px-3 text-left">UPC</th>
                         <th class="py-2 px-3 text-left">UPC (promotional)</th>
                         <th class="py-2 px-3 text-left">ID</th>
+                        <th class="py-2 px-3 text-left">Name</th>
                         <th class="py-2 px-3 text-left">Price</th>
                         <th class="py-2 px-3 text-left">Amount</th>
                         <th class="py-2 px-3 text-left">Promotional</th>
@@ -136,6 +149,7 @@
                         <td class="py-2 px-3">{{ p.upc }}</td>
                         <td class="py-2 px-3">{{ p.upc_prom|default:"-" }}</td>
                         <td class="py-2 px-3">{{ p.id_product }}</td>
+                        <td class="py-2 px-3">{{ p.product_name }}</td>
                         <td class="py-2 px-3">{{ p.selling_price|floatformat:0 }} UAH</td>
                         <td class="py-2 px-3">{{ p.products_number }}</td>
                         <td class="py-2 px-3">{{ p.promotional_product }}</td>
@@ -216,8 +230,11 @@
                         <input type="number" id="products_number" name="products_number" class="w-full px-3 py-2 border rounded" required>
                     </div>
                     <div>
-                        <label for="promotional_product" class="block mb-1">Promotional</label>
-                        <input type="checkbox" id="promotional_product" name="promotional_product" class="w-full px-3 py-2 border rounded" required>
+                        <label for="edit_promotional" class="block mb-1">Promotional</label>
+                        <select id="edit_promotional" name="promotional_product" class="w-full px-3 py-2 border rounded" required>
+                            <option value="True">True</option>
+                            <option value="False">False</option>
+                        </select>
                     </div>
                 </div>
                 <div class="flex justify-end space-x-3">
@@ -264,8 +281,8 @@
                     <div>
                         <label for="edit_promotional" class="block mb-1">Promotional</label>
                         <select id="edit_promotional" name="promotional_product" class="w-full px-3 py-2 border rounded" required>
-                            <option value="manager">True</option>
-                            <option value="cashier">False</option>
+                            <option value="True">True</option>
+                            <option value="False">False</option>
                         </select>
                     </div>
                 </div>
@@ -290,7 +307,7 @@
             <p class="mb-4">Are you sure you want to delete this store product? This action cannot be undone.</p>
             <form action="{% url 'delete_store_product' %}" method="POST">
                 {% csrf_token %}
-                <input type="hidden" id="delete_upc" name="upc">
+                <input type="hidden" id="delete_upc" name="UPC">
                 <div class="flex justify-end space-x-3">
                     <button type="button" onclick="closeModal('deleteStoreProductModal')" class="px-4 py-2 bg-gray-300 rounded">
                         <i class="fas fa-times mr-1"></i>Cancel

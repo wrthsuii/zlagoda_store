@@ -52,7 +52,7 @@ def manage_employees(request):
         'role_filter': role_filter,
         'page_obj': page_obj,
     }
-    return render(request, "manage_employee", context)
+    return render(request, "templates_manager/manage_employees.html", context)
 
 
 def add_employee(request):
@@ -322,18 +322,31 @@ def manage_products(request):
 def manage_product_database(request):
     """
     9. Отримати інформацію про усі товари, відсортовані за назвою;
+    13. Здійснити пошук усіх товарів, що належать певній категорії,
+    відсортованих за назвою;
     """
+    category_filter = request.GET.get('category_name', '')
     page_number = request.GET.get('page', 1)
 
-    query = """
-    SELECT * 
-    FROM Product
-    ORDER BY product_name;
+    with connection.cursor() as c:
+        c.execute("SELECT category_name FROM Category ORDER BY category_name;")
+        category_rows = c.fetchall()
+    categories = [row[0] for row in category_rows]
+
+    query1 = """
+        SELECT P.id_product, P.category_number, P.product_name, P.characteristics
+        FROM Product P
+        JOIN Category C 
+        ON P.category_number = C.category_number
     """
     params = []
+    if category_filter:
+        query1 += " WHERE C.category_name = %s"
+        params.append(category_filter)
+    query1 += " ORDER BY P.product_name"
 
     with connection.cursor() as c:
-        c.execute(query, params)
+        c.execute(query1, params)
         rows = c.fetchall()
 
     products = [
@@ -350,6 +363,8 @@ def manage_product_database(request):
     page_obj = paginator.get_page(page_number)
 
     context = {
+        'category_filter': category_filter,
+        'categories': categories,
         'page_obj': page_obj,
     }
     return render(request, "templates_manager/manage_db_products.html", context)
@@ -424,15 +439,27 @@ def delete_product(request):
 def manage_store_products(request):
     """
     10. Отримати інформацію про усі товари у магазині, відсортовані за кількістю;
+    15. Отримати інформацію про усі акційні товари, відсортовані за кількістю одиниць
+    товару/ за назвою;
+    16. Отримати інформацію про усі не акційні товари, відсортовані за кількістю
+    одиниць товару/ за назвою;
     """
     page_number = request.GET.get('page', 1)
+    prom_filter = request.GET.get('promotional_product', '')
 
     query = """
-    SELECT * 
-    FROM Store_Product
-    ORDER BY products_number DESC;
+    SELECT SP.UPC, SP.UPC_prom, SP.id_product, P.product_name, SP.selling_price,
+    SP.products_number, SP.promotional_product
+    FROM Store_Product SP
+    JOIN Product P
+    ON SP.id_product = P.id_product
     """
     params = []
+
+    if prom_filter:
+        query += " WHERE SP.promotional_product = %s"
+        params.append(prom_filter)
+    query += " ORDER BY SP.products_number, P.product_name"
 
     with connection.cursor() as c:
         c.execute(query, params)
@@ -443,9 +470,10 @@ def manage_store_products(request):
             'upc': row[0],
             'upc_prom': row[1],
             'id_product': row[2],
-            'selling_price': row[3],
-            'products_number': row[4],
-            'promotional_product': row[5]
+            'product_name': row[3],
+            'selling_price': row[4],
+            'products_number': row[5],
+            'promotional_product': row[6]
         }
         for row in rows
     ]
@@ -454,9 +482,11 @@ def manage_store_products(request):
     page_obj = paginator.get_page(page_number)
 
     context = {
+        'prom_filter': prom_filter,
         'page_obj': page_obj,
     }
     return render(request, "templates_manager/manage_store_products.html", context)
+
 
 def add_store_product(request):
     """
@@ -471,7 +501,7 @@ def add_store_product(request):
         """
         with connection.cursor() as c:
             c.execute(query, [
-                data['UPC'], data.get('UPC_prom'),
+                data['UPC'], data.get('UPC_prom') or None,
                 data['id_product'], data['selling_price'],
                 data['products_number'], data['promotional_product']
 
