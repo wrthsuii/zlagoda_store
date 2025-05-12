@@ -1,425 +1,453 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manager Space - Employee Management</title>
-    <link rel="icon" href="/img/manager_icon.png" type="image/x-icon">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            overflow-y: auto;
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 2% auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .employee-row:hover {
-            background-color: #f5f5f5;
-        }
-        .table-container {
-            overflow-x: auto;
-            max-width: 100%;
-        }
-        table {
-            min-width: 1200px;
-            width: 100%;
-        }
-        .compact-table {
-            font-size: 0.875rem;
-        }
-        .compact-table th,
-        .compact-table td {
-            padding: 0.5rem 0.75rem;
-            white-space: nowrap;
-        }
-        .compact-table th {
-            font-weight: 600;
-        }
-        .action-cell {
-            width: 80px;
-        }
-        .numeric-cell {
-            text-align: right;
-        }
-        .date-cell {
-            white-space: nowrap;
-        }
-        .action-btn {
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-            transition: all 0.2s;
-        }
-        .edit-btn {
-            color: #3b82f6;
-        }
-        .edit-btn:hover {
-            background-color: #bfdbfe;
-        }
-        .delete-btn {
-            color: #ef4444;
-        }
-        .delete-btn:hover {
-            background-color: #fecaca;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Management | Manager Space</title>
+  <link rel="icon" href="/img/manager_icon.png" type="image/x-icon">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      max-width: 800px;
+      width: 90%;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .action-btn {
+      transition: all 0.2s;
+    }
+    .action-btn:hover {
+      transform: scale(1.05);
+    }
+    .table-container {
+      overflow-x: auto;
+    }
+    .stats-card {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+    }
+  </style>
 </head>
-<body class="bg-[#f2ebd9] text-gray-800">
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+  <!-- Navigation -->
+  <nav class="bg-yellow-900 text-white px-6 py-4 shadow-lg">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="text-2xl font-semibold flex items-center">
+        <a href="/manager" class="flex items-center text-white-600 hover:underline">
+            <i class="fas fa-chart-line mr-2"></i>Manager Space
+        </a>
+      </div>
+      <ul class="flex space-x-6 text-lg">
+        <li><a href="/products" class="hover:underline flex items-center"><i class="fas fa-box-open mr-1"></i>Products</a></li>
+        <li><a href="/categories" class="hover:underline flex items-center"><i class="fas fa-tags mr-1"></i>Categories</a></li>
+        <li><a href="/employees" class="font-extrabold text-white flex items-center"><i class="fas fa-users mr-1"></i>Employees</a></li>
+        <li><a href="/customer_cards" class="hover:underline flex items-center"><i class="fas fa-id-card mr-1"></i>Customers</a></li>
+        <li><a href="/reports" class="hover:underline flex items-center"><i class="fas fa-chart-pie mr-1"></i>Reports</a></li>
+        <li><button onclick="openModal('logoutModal')" class="text-red-300 hover:text-red-100 flex items-center">
+          <i class="fas fa-sign-out-alt mr-1"></i>Log Out
+        </button></li>
+      </ul>
+    </div>
+  </nav>
 
-    <nav class="bg-yellow-900 text-white px-6 py-4 shadow-md">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <a href="{% url 'manager_dashboard' %}" class="text-2xl font-semibold hover:underline">
-             Manager Space
-            </a>
-            <ul class="flex space-x-6 text-lg">
-                <li><a href="/products" class="hover:underline">Products</a></li>
-                <li><a href="/categories" class="hover:underline">Categories</a></li>
-                <li><a href="#" class="font-extrabold text-white">Employees</a></li>
-                <li><a href="/customer_cards" class="hover:underline">Customers</a></li>
-                <li><a href="/reports" class="hover:underline">Reports</a></li>
-                <li><button onclick="openModal('logoutModal')" class="text-red-400 hover:underline">Log Out</button></li>
-            </ul>
-        </div>
-    </nav>
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto py-8 px-4">
+    <h1 class="text-3xl font-bold text-yellow-900 mb-6">Employee Management</h1>
 
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold mb-8 text-center">EMPLOYEE MANAGEMENT</h1>
+    <!-- Filters and Actions -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <form method="get" class="w-full md:w-auto">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Role:</label>
+          <div class="flex items-center">
+            <select name="empl_role" onchange="this.form.submit()"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+              <option value="" {% if role_filter == '' %}selected{% endif %}>All roles</option>
+              <option value="cashier" {% if role_filter == 'cashier' %}selected{% endif %}>Cashier</option>
+              <option value="manager" {% if role_filter == 'manager' %}selected{% endif %}>Manager</option>
+              <option value="stocker" {% if role_filter == 'stocker' %}selected{% endif %}>Stocker</option>
+              <option value="accountant" {% if role_filter == 'accountant' %}selected{% endif %}>Accountant</option>
+              <option value="marketer" {% if role_filter == 'marketer' %}selected{% endif %}>Marketer</option>
+              <option value="security" {% if role_filter == 'security' %}selected{% endif %}>Security</option>
+            </select>
+          </div>
+        </form>
 
-        <!-- Filters and Actions -->
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <form method="get" class="flex items-center">
-                <label class="text-lg font-medium mr-2">
-                    Role:
-                    <select name="empl_role" onchange="this.form.submit()" class="ml-2 py-1 px-3 rounded border border-gray-300">
-                        <option value="" {% if role_filter == '' %}selected{% endif %}>All</option>
-                        <option value="cashier" {% if role_filter == 'cashier' %}selected{% endif %}>cashier</option>
-                    </select>
-                </label>
-            </form>
-
-            <button onclick="openModal('addEmployeeModal')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-                <i class="fas fa-plus mr-2"></i>Add new employee
-            </button>
-        </div>
-
-        <!-- Employee Table -->
-        <div class="table-container bg-white shadow-md rounded-lg overflow-hidden">
-            <table class="min-w-full compact-table">
-                <thead class="bg-gray-200">
-                    <tr>
-                        <th class="py-2 px-3 text-left">ID</th>
-                        <th class="py-2 px-3 text-left">Surname</th>
-                        <th class="py-2 px-3 text-left">Name</th>
-                        <th class="py-2 px-3 text-left">Patr.</th>
-                        <th class="py-2 px-3 text-left">Role</th>
-                        <th class="py-2 px-3 text-left numeric-cell">Salary</th>
-                        <th class="py-2 px-3 text-left date-cell">Birth</th>
-                        <th class="py-2 px-3 text-left date-cell">Start</th>
-                        <th class="py-2 px-3 text-left">Phone</th>
-                        <th class="py-2 px-3 text-left">City</th>
-                        <th class="py-2 px-3 text-left">Street</th>
-                        <th class="py-2 px-3 text-left">ZIP</th>
-                        <th class="py-2 px-3 text-left action-cell">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for e in page_obj %}
-                    <tr class="employee-row border-t">
-                        <td class="py-2 px-3">{{ e.id_employee }}</td>
-                        <td class="py-2 px-3">{{ e.empl_surname }}</td>
-                        <td class="py-2 px-3">{{ e.empl_name }}</td>
-                        <td class="py-2 px-3">{{ e.empl_patronymic|default:"-" }}</td>
-                        <td class="py-2 px-3">{{ e.empl_role }}</td>
-                        <td class="py-2 px-3 numeric-cell">{{ e.salary|floatformat:0 }} UAH</td>
-                        <td class="py-2 px-3 date-cell">{{ e.date_of_birth|date:"d.m.Y" }}</td>
-                        <td class="py-2 px-3 date-cell">{{ e.date_of_start|date:"d.m.Y" }}</td>
-                        <td class="py-2 px-3">{{ e.phone_number }}</td>
-                        <td class="py-2 px-3">{{ e.city }}</td>
-                        <td class="py-2 px-3">{{ e.street }}</td>
-                        <td class="py-2 px-3">{{ e.zip_code }}</td>
-                        <td class="py-2 px-3 flex space-x-1">
-                            <button onclick="openEditModal('{{ e.id_employee }}')" class="edit-btn action-btn" title="Edit">
-                                <i class="fas fa-pencil-alt"></i>
-                            </button>
-                            <button onclick="openDeleteModal('{{ e.id_employee }}')" class="delete-btn action-btn" title="Delete">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="mt-6 flex justify-center">
-            <nav class="inline-flex">
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded-l hover:bg-gray-100">
-                        <i class="fas fa-chevron-left mr-1"></i>Previous
-                    </a>
-                {% else %}
-                    <span class="px-3 py-1 border rounded-l text-gray-400 cursor-not-allowed">
-                        <i class="fas fa-chevron-left mr-1"></i>Previous
-                    </span>
-                {% endif %}
-
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <span class="px-3 py-1 border-t border-b border-r bg-gray-300">{{ num }}</span>
-                    {% else %}
-                        <a href="?page={{ num }}" class="px-3 py-1 border hover:bg-gray-100">{{ num }}</a>
-                    {% endif %}
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded-r hover:bg-gray-100">
-                        Next<i class="fas fa-chevron-right ml-1"></i>
-                    </a>
-                {% else %}
-                    <span class="px-3 py-1 border rounded-r text-gray-400 cursor-not-allowed">
-                        Next<i class="fas fa-chevron-right ml-1"></i>
-                    </span>
-                {% endif %}
-            </nav>
-        </div>
-
-    <!-- Add Employee Modal -->
-    <div id="addEmployeeModal" class="modal">
-        <div class="modal-content">
-            <h2 class="text-xl font-semibold mb-4">
-                <i class="fas fa-user-plus mr-2"></i>Add new employee
-            </h2>
-            <form action="{% url 'add_employee' %}" method="POST">
-                {% csrf_token %}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label for="id" class="block mb-1">ID</label>
-                        <input type="text" id="id" name="id_employee" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="surname" class="block mb-1">Surname</label>
-                        <input type="text" id="surname" name="empl_surname" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="name" class="block mb-1">Name</label>
-                        <input type="text" id="name" name="empl_name" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="patronymic" class="block mb-1">Patronymic</label>
-                        <input type="text" id="patronymic" name="empl_patronymic" class="w-full px-3 py-2 border rounded">
-                    </div>
-                    <div>
-                        <label for="role" class="block mb-1">Role</label>
-                        <select id="role" name="empl_role" class="w-full px-3 py-2 border rounded" required>
-                            <option value="manager">manager</option>
-                            <option value="cashier">cashier</option>
-                            <option value="stocker">stocker</option>
-                            <option value="accountant">accountant</option>
-                            <option value="marketer">marketer</option>
-                            <option value="security">security</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="salary" class="block mb-1">Salary</label>
-                        <input type="number" id="salary" name="salary" class="w-full px-3 py-2 border rounded" required step="1">
-                    </div>
-                    <div>
-                        <label for="birth_date" class="block mb-1">Date of birth</label>
-                        <input type="date" id="birth_date" name="date_of_birth" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="phone" class="block mb-1">Phone</label>
-                        <input type="tel" id="phone" name="phone_number" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="start_date" class="block mb-1">Date of start</label>
-                        <input type="date" id="start_date" name="date_of_start" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="city" class="block mb-1">City</label>
-                        <input type="text" id="city" name="city" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="street" class="block mb-1">Street</label>
-                        <input type="text" id="street" name="street" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="zip_code" class="block mb-1">ZIP code</label>
-                        <input type="text" id="zip_code" name="zip_code" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('addEmployeeModal')" class="px-4 py-2 bg-gray-300 rounded">
-                        <i class="fas fa-times mr-1"></i>Cancel
-                    </button>
-                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">
-                        <i class="fas fa-check mr-1"></i>Add
-                    </button>
-                </div>
-            </form>
-        </div>
+        <button onclick="openModal('addEmployeeModal')"
+                class="mt-4 md:mt-0 px-4 py-2 bg-yellow-700 text-white rounded-md hover:bg-yellow-800 flex items-center">
+          <i class="fas fa-plus mr-2"></i>Add New Employee
+        </button>
+      </div>
     </div>
 
-    <!-- Edit Employee Modal -->
-    <div id="editEmployeeModal" class="modal">
-        <div class="modal-content">
-            <h2 class="text-xl font-semibold mb-4">
-                <i class="fas fa-user-edit mr-2"></i>Edit employee
-            </h2>
-            <form action="{% url 'edit_employee' %}" method="POST">
-                {% csrf_token %}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label for="edit_id_field" class="block mb-1">ID</label>
-                        <input type="text" id="edit_id_field" name="id_employee" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="edit_surname" class="block mb-1">Surname</label>
-                        <input type="text" id="edit_surname" name="empl_surname" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="edit_name" class="block mb-1">Name</label>
-                        <input type="text" id="edit_name" name="empl_name" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="edit_patronymic" class="block mb-1">Patronymic</label>
-                        <input type="text" id="edit_patronymic" name="empl_patronymic" class="w-full px-3 py-2 border rounded">
-                    </div>
-                    <div>
-                        <label for="edit_role" class="block mb-1">Role</label>
-                        <select id="edit_role" name="empl_role" class="w-full px-3 py-2 border rounded" required>
-                            <option value="manager">manager</option>
-                            <option value="cashier">cashier</option>
-                            <option value="stocker">stocker</option>
-                            <option value="accountant">accountant</option>
-                            <option value="marketer">marketer</option>
-                            <option value="security">security</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="edit_salary" class="block mb-1">Salary</label>
-                        <input type="number" id="edit_salary" name="salary" class="w-full px-3 py-2 border rounded" required step="1">
-                    </div>
-                    <div>
-                        <label for="edit_birth_date" class="block mb-1">Date of birth</label>
-                        <input type="date" id="edit_birth_date" name="date_of_birth" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="edit_start_date" class="block mb-1">Date of start</label>
-                        <input type="date" id="edit_start_date" name="date_of_start" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="edit_phone" class="block mb-1">Phone</label>
-                        <input type="tel" id="edit_phone" name="phone_number" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="edit_city" class="block mb-1">City</label>
-                        <input type="text" id="edit_city" name="city" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="edit_street" class="block mb-1">Street</label>
-                        <input type="text" id="edit_street" name="street" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label for="edit_zip_code" class="block mb-1">ZIP code</label>
-                        <input type="text" id="edit_zip_code" name="zip_code" class="w-full px-3 py-2 border rounded" required>
-                    </div>
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('editEmployeeModal')" class="px-4 py-2 bg-gray-300 rounded">
-                        <i class="fas fa-times mr-1"></i>Cancel
-                    </button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">
-                        <i class="fas fa-save mr-1"></i>Save
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Delete Employee Modal -->
-    <div id="deleteEmployeeModal" class="modal">
-        <div class="modal-content">
-            <h2 class="text-xl font-semibold mb-4">
-                <i class="fas fa-user-times mr-2"></i>Delete employee
-            </h2>
-            <p class="mb-4">Are you sure you want to delete this employee? This action cannot be undone.</p>
-            <form action="{% url 'delete_employee' %}" method="POST">
-                {% csrf_token %}
-                <input type="hidden" id="delete_id" name="id_employee">
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('deleteEmployeeModal')" class="px-4 py-2 bg-gray-300 rounded">
-                        <i class="fas fa-times mr-1"></i>Cancel
-                    </button>
-                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded">
-                        <i class="fas fa-trash-alt mr-1"></i>Delete
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Logout Modal -->
-    <div id="logoutModal" class="modal">
-        <div class="modal-content">
-            <h2 class="text-xl font-semibold mb-4">
-                <i class="fas fa-sign-out-alt mr-2"></i>Logout Confirmation
-            </h2>
-            <p class="mb-6">Are you sure you want to log out of the system?</p>
-            <div class="flex justify-end space-x-3">
-                <button onclick="closeModal('logoutModal')" class="px-4 py-2 bg-gray-300 rounded">
-                    <i class="fas fa-times mr-1"></i>Cancel
+    <!-- Employees Table -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="table-container">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salary</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for e in page_obj %}
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">{{ e.id_employee }}</td>
+              <td class="px-6 py-4">
+                <div class="font-medium">{{ e.empl_surname }} {{ e.empl_name }}</div>
+                <div class="text-gray-500">{{ e.empl_patronymic|default:"" }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap capitalize">{{ e.empl_role }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">{{ e.salary|floatformat:0 }} UAH</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div>Birth: {{ e.date_of_birth|date:"d.m.Y" }}</div>
+                <div>Start: {{ e.date_of_start|date:"d.m.Y" }}</div>
+              </td>
+              <td class="px-6 py-4">
+                <div>{{ e.phone_number }}</div>
+                <div class="text-gray-500">{{ e.city }}, {{ e.street }}</div>
+                <div class="text-gray-500">{{ e.zip_code }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap flex space-x-2">
+                <button onclick="openEditModal('{{ e.id_employee }}', '{{ e.empl_surname }}', '{{ e.empl_name }}', '{{ e.empl_patronymic }}', '{{ e.empl_role }}', '{{ e.salary }}', '{{ e.date_of_birth|date:"Y-m-d" }}', '{{ e.date_of_start|date:"Y-m-d" }}', '{{ e.phone_number }}', '{{ e.city }}', '{{ e.street }}', '{{ e.zip_code }}')"
+                        class="text-blue-600 hover:text-blue-800 action-btn" title="Edit">
+                  <i class="fas fa-pencil-alt"></i>
                 </button>
-                <a href="/logout" class="px-4 py-2 bg-red-600 text-white rounded text-center">
-                    <i class="fas fa-sign-out-alt mr-1"></i>Log out
-                </a>
-            </div>
+                <button onclick="openDeleteModal('{{ e.id_employee }}')"
+                        class="text-red-600 hover:text-red-800 action-btn" title="Delete">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-6 flex justify-center">
+      <nav class="inline-flex">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}{% if role_filter %}&empl_role={{ role_filter }}{% endif %}"
+             class="px-4 py-2 border rounded-l hover:bg-gray-100">
+            <i class="fas fa-chevron-left mr-1"></i>Previous
+          </a>
+        {% else %}
+          <span class="px-4 py-2 border rounded-l text-gray-400 cursor-not-allowed">
+            <i class="fas fa-chevron-left mr-1"></i>Previous
+          </span>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <span class="px-4 py-2 border-t border-b border-r bg-gray-300">{{ num }}</span>
+          {% else %}
+            <a href="?page={{ num }}{% if role_filter %}&empl_role={{ role_filter }}{% endif %}"
+               class="px-4 py-2 border hover:bg-gray-100">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if role_filter %}&empl_role={{ role_filter }}{% endif %}"
+             class="px-4 py-2 border rounded-r hover:bg-gray-100">
+            Next<i class="fas fa-chevron-right ml-1"></i>
+          </a>
+        {% else %}
+          <span class="px-4 py-2 border rounded-r text-gray-400 cursor-not-allowed">
+            Next<i class="fas fa-chevron-right ml-1"></i>
+          </span>
+        {% endif %}
+      </nav>
+    </div>
+  </div>
+
+  <!-- Add Employee Modal -->
+  <div id="addEmployeeModal" class="modal">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold flex items-center">
+          <i class="fas fa-user-plus mr-2 text-yellow-700"></i>Add New Employee
+        </h2>
+        <button onclick="closeModal('addEmployeeModal')" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form action="{% url 'add_employee' %}" method="POST">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Employee ID</label>
+            <input type="text" name="id_employee" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Surname</label>
+            <input type="text" name="empl_surname" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <input type="text" name="empl_name" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Patronymic</label>
+            <input type="text" name="empl_patronymic" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+            <select name="empl_role" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+              <option value="manager">Manager</option>
+              <option value="cashier">Cashier</option>
+              <option value="stocker">Stocker</option>
+              <option value="accountant">Accountant</option>
+              <option value="marketer">Marketer</option>
+              <option value="security">Security</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Salary (UAH)</label>
+            <input type="number" name="salary" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required step="1">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+            <input type="date" name="date_of_birth" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date of Start</label>
+            <input type="date" name="date_of_start" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+            <input type="tel" name="phone_number" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+            <input type="text" name="city" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Street</label>
+            <input type="text" name="street" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+            <input type="text" name="zip_code" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
         </div>
+        <div class="flex justify-end space-x-3">
+          <button type="button" onclick="closeModal('addEmployeeModal')" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 bg-yellow-700 text-white rounded-md hover:bg-yellow-800">
+            Add Employee
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <script>
-        // Modal functions
-        function openModal(id) {
-            document.getElementById(id).style.display = 'block';
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
-
-        function openEditModal(id) {
-            document.getElementById('edit_id_field').value = id;
-            openModal('editEmployeeModal');
-        }
-
-        function openDeleteModal(id) {
-            document.getElementById('delete_id').value = id;
-            openModal('deleteEmployeeModal');
-        }
-
-        window.onclick = function(event) {
-            if (event.target.className === 'modal') {
-                event.target.style.display = 'none';
-            }
-        }
-    </script>
+  <!-- Edit Employee Modal -->
+  <div id="editEmployeeModal" class="modal">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold flex items-center">
+          <i class="fas fa-edit mr-2 text-yellow-700"></i>Edit Employee
+        </h2>
+        <button onclick="closeModal('editEmployeeModal')" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form action="{% url 'edit_employee' %}" method="POST">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Employee ID</label>
+            <input type="text" id="edit_id_field" name="id_employee"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" readonly>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Surname</label>
+            <input type="text" id="edit_surname" name="empl_surname"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <input type="text" id="edit_name" name="empl_name"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Patronymic</label>
+            <input type="text" id="edit_patronymic" name="empl_patronymic"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+            <select id="edit_role" name="empl_role" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+              <option value="manager">Manager</option>
+              <option value="cashier">Cashier</option>
+              <option value="stocker">Stocker</option>
+              <option value="accountant">Accountant</option>
+              <option value="marketer">Marketer</option>
+              <option value="security">Security</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Salary (UAH)</label>
+            <input type="number" id="edit_salary" name="salary"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required step="1">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+            <input type="date" id="edit_birth_date" name="date_of_birth"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date of Start</label>
+            <input type="date" id="edit_start_date" name="date_of_start"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+            <input type="tel" id="edit_phone" name="phone_number"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+            <input type="text" id="edit_city" name="city"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Street</label>
+            <input type="text" id="edit_street" name="street"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+            <input type="text" id="edit_zip_code" name="zip_code"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+          </div>
+        </div>
+        <div class="flex justify-end space-x-3">
+          <button type="button" onclick="closeModal('editEmployeeModal')" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 bg-yellow-700 text-white rounded-md hover:bg-yellow-800">
+            Save Changes
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
+
+  <!-- Delete Employee Modal -->
+  <div id="deleteEmployeeModal" class="modal">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold flex items-center">
+          <i class="fas fa-trash-alt mr-2 text-red-600"></i>Delete Employee
+        </h2>
+        <button onclick="closeModal('deleteEmployeeModal')" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <p class="mb-6">Are you sure you want to delete employee #<span id="employeeToDelete"></span>? This action cannot be undone.</p>
+      <form action="{% url 'delete_employee' %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" id="delete_id" name="id_employee">
+        <div class="flex justify-end space-x-3">
+          <button type="button" onclick="closeModal('deleteEmployeeModal')" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+            Delete
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Logout Modal -->
+  <div id="logoutModal" class="modal">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold flex items-center">
+          <i class="fas fa-sign-out-alt mr-2 text-red-600"></i>Logout Confirmation
+        </h2>
+        <button onclick="closeModal('logoutModal')" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <p class="mb-6">Are you sure you want to log out of the system?</p>
+      <div class="flex justify-end space-x-3">
+        <button onclick="closeModal('logoutModal')" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400">
+          Cancel
+        </button>
+        <a href="/logout" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-center">
+          Log out
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Modal functions
+    function openModal(id) {
+      document.getElementById(id).style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+
+    function openEditModal(id, surname, name, patronymic, role, salary, birthDate, startDate, phone, city, street, zipCode) {
+      document.getElementById('edit_id_field').value = id;
+      document.getElementById('edit_surname').value = surname;
+      document.getElementById('edit_name').value = name;
+      document.getElementById('edit_patronymic').value = patronymic || '';
+      document.getElementById('edit_role').value = role;
+      document.getElementById('edit_salary').value = salary;
+      document.getElementById('edit_birth_date').value = birthDate;
+      document.getElementById('edit_start_date').value = startDate;
+      document.getElementById('edit_phone').value = phone;
+      document.getElementById('edit_city').value = city;
+      document.getElementById('edit_street').value = street;
+      document.getElementById('edit_zip_code').value = zipCode;
+      openModal('editEmployeeModal');
+    }
+
+    function openDeleteModal(id) {
+      document.getElementById('employeeToDelete').textContent = id;
+      document.getElementById('delete_id').value = id;
+      openModal('deleteEmployeeModal');
+    }
+
+    window.onclick = function(event) {
+      if (event.target.className === 'modal') {
+        closeModal(event.target.id);
+      }
+    }
+  </script>
 </body>
 </html>

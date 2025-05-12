@@ -28,6 +28,8 @@ urlpatterns = [
     path("add_store_product/", manager_dashboard.add_store_product, name="add_store_product"),
     path("edit_store_product/", manager_dashboard.edit_store_product, name="edit_store_product"),
     path("delete_store_product/", manager_dashboard.delete_store_product, name="delete_store_product"),
-
-
+    path("reports/", manager_dashboard.manage_reports, name="manage_reports"),
+    path("receipts/", manager_dashboard.manage_receipts, name="manage_receipts"),
+    path("delete_check/", manager_dashboard.delete_check, name="delete_check"),
+    path('receipts/<str:check_number>/', manager_dashboard.receipt_details, name='receipt_details'),
 ]

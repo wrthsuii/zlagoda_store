@@ -73,6 +73,6 @@ CREATE TABLE Sale (
                 ON UPDATE CASCADE
                 ON DELETE CASCADE,
     product_number INTEGER NOT NULL,
-    selling_price DECIMAL(13,4) NOT NULL,
+    selling_price_total DECIMAL(13,4) NOT NULL,
     PRIMARY KEY (UPC, check_number)
 )

@@ -89,7 +89,7 @@ def edit_employee(request):
              empl_role = %s, salary = %s, date_of_birth = %s,
              date_of_start = %s, phone_number = %s, city = %s,
              street = %s, zip_code = %s
-         WHERE id_employee = %s
+         WHERE id_employee = %s;
         """
         with connection.cursor() as c:
             c.execute(query, [
@@ -131,7 +131,7 @@ def manage_customer_cards(request):
 
     query = """
     SELECT * 
-    FROM Customer_Card
+    FROM Customer_Card;
     """
     params = []
     if percent_filter:
@@ -176,7 +176,8 @@ def add_customer_card(request):
         data = request.POST
         query = """
         INSERT INTO Customer_Card (card_number, cust_surname, cust_name, 
-        cust_patronymic, phone_number, city, street, zip_code, percent)
+                                   cust_patronymic, phone_number, city, 
+                                   street, zip_code, percent)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
         """
         with connection.cursor() as c:
@@ -199,7 +200,7 @@ def edit_customer_card(request):
          SET cust_surname = %s, cust_name = %s, cust_patronymic = %s,
              phone_number = %s, city = %s, street = %s, zip_code = %s,
              percent = %s
-         WHERE card_number = %s
+         WHERE card_number = %s;
         """
         with connection.cursor() as c:
             c.execute(query, [
@@ -289,7 +290,7 @@ def edit_category(request):
         query = """
          UPDATE Category
          SET category_name = %s
-         WHERE category_number = %s
+         WHERE category_number = %s;
         """
         with connection.cursor() as c:
             c.execute(query, [
@@ -329,7 +330,11 @@ def manage_product_database(request):
     page_number = request.GET.get('page', 1)
 
     with connection.cursor() as c:
-        c.execute("SELECT category_name FROM Category ORDER BY category_name;")
+        c.execute("""
+        SELECT category_name 
+        FROM Category 
+        ORDER BY category_name
+        """)
         category_rows = c.fetchall()
     categories = [row[0] for row in category_rows]
 
@@ -377,7 +382,11 @@ def add_product(request):
         data = request.POST
         try:
             with connection.cursor() as c:
-                c.execute("SELECT 1 FROM category WHERE category_number = %s", [data['category_number']])
+                c.execute("""
+                SELECT 1 
+                FROM category 
+                WHERE category_number = %s;
+                """, [data['category_number']])
                 if not c.fetchone():
                     messages.error(request, "Error: The selected category does not exist")
                     return redirect("manage_product_database")
@@ -408,7 +417,7 @@ def edit_product(request):
         query = """
          UPDATE Product
          SET category_number = %s, product_name = %s, characteristics = %s
-         WHERE id_product = %s
+         WHERE id_product = %s;
         """
         with connection.cursor() as c:
             c.execute(query, [
@@ -449,7 +458,7 @@ def manage_store_products(request):
 
     query = """
     SELECT SP.UPC, SP.UPC_prom, SP.id_product, P.product_name, SP.selling_price,
-    SP.products_number, SP.promotional_product
+           SP.products_number, SP.promotional_product
     FROM Store_Product SP
     JOIN Product P
     ON SP.id_product = P.id_product
@@ -496,7 +505,8 @@ def add_store_product(request):
         data = request.POST
         query = """
         INSERT INTO Store_Product (UPC, UPC_prom, id_product, 
-        selling_price, products_number, promotional_product)
+                                   selling_price, products_number, 
+                                   promotional_product)
         VALUES (%s, %s, %s, %s, %s, %s);
         """
         with connection.cursor() as c:
@@ -516,8 +526,9 @@ def edit_store_product(request):
         data = request.POST
         query = """
          UPDATE Store_Product
-         SET UPC_prom = %s, id_product = %s, selling_price = %s, products_number = %s, promotional_product = %s
-         WHERE UPC = %s
+         SET UPC_prom = %s, id_product = %s, selling_price = %s, 
+             products_number = %s, promotional_product = %s
+         WHERE UPC = %s;
         """
         with connection.cursor() as c:
             c.execute(query, [
@@ -542,3 +553,262 @@ def delete_store_product(request):
             c.execute(query, [UPC])
 
     return redirect('manage_store_products')
+
+#===========CHECKS===========
+
+def manage_reports(request):
+    return render(request, 'templates_manager/manage_reports.html')
+
+
+def manage_receipts(request):
+    """
+    17. Отримати інформацію про усі чеки, створені певним касиром за певний період
+    часу;
+    18. Отримати інформацію про усі чеки, створені усіма касирами за певний період
+    часу;
+    19. Визначити загальну суму проданих товарів з чеків, створених певним касиром за
+    певний період часу;
+    20. Визначити загальну суму проданих товарів з чеків, створених усіма касиром за
+    певний період часу;
+    21. Визначити загальну кількість одиниць певного товару, проданого за певний
+    період часу.
+    """
+    page_number = request.GET.get('page', 1)
+    cashier_filter = request.GET.get('cashier', '')
+    date_from = request.GET.get('start_date')
+    date_to = request.GET.get('end_date')
+    product_filter = request.GET.get('product')
+
+    with connection.cursor() as c:
+        c.execute("""
+        SELECT id_employee, empl_surname 
+        FROM Employee 
+        WHERE empl_role = 'cashier' 
+        ORDER BY empl_surname;
+        """)
+        cashiers = [{'id': row[0], 'surname': row[1]} for row in c.fetchall()]
+
+        c.execute("""
+        SELECT id_product, product_name
+        FROM Product
+        ORDER BY id_product;
+        """)
+        products = [{'id': row[0], 'name': row[1]} for row in c.fetchall()]
+
+        selected_product_name = None
+        if product_filter:
+            c.execute("""
+            SELECT product_name 
+            FROM Product 
+            WHERE id_product = %s;
+            """, [product_filter])
+            result = c.fetchone()
+            if result:
+                selected_product_name = result[0]
+
+        stats = {'total_receipts': 0, 'total_sales': 0, 'product_quantity': None}
+
+        count_query = """
+            SELECT COUNT(*) 
+            FROM "Check" C
+            WHERE 1=1
+        """
+        count_params = []
+
+        if cashier_filter:
+            count_query += " AND C.id_employee = %s"
+            count_params.append(cashier_filter)
+        if date_from:
+            count_query += " AND C.print_date >= %s"
+            count_params.append(date_from)
+        if date_to:
+            count_query += " AND C.print_date <= %s"
+            count_params.append(date_to)
+
+        c.execute(count_query, count_params)
+        stats['total_receipts'] = c.fetchone()[0]
+
+        sum_query = """
+            SELECT COALESCE(SUM(C.sum_total), 0)
+            FROM "Check" C
+            WHERE 1=1
+        """
+        sum_params = []
+
+        if cashier_filter:
+            sum_query += " AND C.id_employee = %s"
+            sum_params.append(cashier_filter)
+        if date_from:
+            sum_query += " AND C.print_date >= %s"
+            sum_params.append(date_from)
+        if date_to:
+            sum_query += " AND C.print_date <= %s"
+            sum_params.append(date_to)
+
+        c.execute(sum_query, sum_params)
+        stats['total_sales'] = c.fetchone()[0]
+
+        if product_filter:
+            product_quantity_query = """
+                SELECT COALESCE(SUM(S.product_number), 0)
+                FROM (Sale S
+                JOIN Store_Product SP 
+                ON S.UPC = SP.UPC)
+                JOIN "Check" C 
+                ON S.check_number = C.check_number
+                WHERE SP.id_product = %s
+            """
+            product_params = [product_filter]
+
+            if cashier_filter:
+                product_quantity_query += " AND C.id_employee = %s"
+                product_params.append(cashier_filter)
+            if date_from:
+                product_quantity_query += " AND C.print_date >= %s"
+                product_params.append(date_from)
+            if date_to:
+                product_quantity_query += " AND C.print_date <= %s"
+                product_params.append(date_to)
+
+            c.execute(product_quantity_query, product_params)
+            stats['product_quantity'] = c.fetchone()[0]
+
+    query = """
+        SELECT DISTINCT C.check_number, E.empl_surname, C.print_date, C.sum_total
+        FROM "Check" C
+        JOIN Employee E 
+        ON C.id_employee = E.id_employee
+        WHERE 1=1
+    """
+    params = []
+
+    if cashier_filter:
+        query += " AND C.id_employee = %s"
+        params.append(cashier_filter)
+    if date_from:
+        query += " AND C.print_date >= %s"
+        params.append(date_from)
+    if date_to:
+        query += " AND C.print_date <= %s"
+        params.append(date_to)
+    if product_filter:
+        query += """
+            AND EXISTS (
+                SELECT 1 FROM Sale S
+                JOIN Store_Product SP ON S.UPC = SP.UPC
+                WHERE S.check_number = C.check_number
+                AND SP.id_product = %s
+            )
+        """
+        params.append(product_filter)
+
+    query += " ORDER BY C.check_number DESC"
+
+    with connection.cursor() as c:
+        c.execute(query, params)
+        rows = c.fetchall()
+
+    receipts = [
+        {
+            'check_number': row[0],
+            'empl_surname': row[1],
+            'print_date': row[2],
+            'sum_total': row[3]
+        }
+        for row in rows
+    ]
+
+    paginator = Paginator(receipts, 10)
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'cashiers': cashiers,
+        'products': products,
+        'page_obj': page_obj,
+        'stats': stats,
+        'request': request,
+        'selected_product_name': selected_product_name,
+        'selected_product_id': product_filter
+    }
+    return render(request, "templates_manager/manage_receipts.html", context)
+
+def delete_check(request):
+    """
+    3. Видаляти дані про чеки;
+    """
+    if request.method == 'POST':
+        check_number = request.POST['check_number']
+
+        query = """
+        DELETE FROM "Check"
+        WHERE check_number = %s;
+        """
+        with connection.cursor() as c:
+            c.execute(query, [check_number])
+
+    return redirect('manage_receipts')
+
+def receipt_details(request, check_number):
+    """
+    17. Отримати інформацію про усі чеки, створені певним касиром за певний період
+    часу (з можливістю перегляду куплених товарів у цьому чеку, їх назви, к-сті та ціни);
+    18. Отримати інформацію про усі чеки, створені усіма касирами за певний період
+    часу (з можливістю перегляду куплених товарів у цьому чеку, їх назва, к-сті та ціни);
+    """
+    with connection.cursor() as c:
+        c.execute("""
+            SELECT C.check_number, E.empl_surname, C.card_number, CC.cust_surname,
+                   CC.cust_name, C.print_date, C.sum_total, C.vat, SUM(S.selling_price_total) AS SPT,
+                   CC.percent
+            FROM (("Check" C
+            JOIN Employee E 
+            ON C.id_employee = E.id_employee)
+            LEFT JOIN Customer_Card CC 
+            ON C.card_number = CC.card_number)
+            JOIN Sale S ON C.check_number = S.check_number
+            WHERE C.check_number = %s
+            GROUP BY C.check_number, E.empl_surname, C.card_number, CC.cust_surname,
+                     CC.cust_name, C.print_date, C.sum_total, C.vat, CC.percent;
+        """, [check_number])
+        receipt_row = c.fetchone()
+
+        receipt = {
+            'check_number': receipt_row[0],
+            'empl_surname': receipt_row[1],
+            'card_number': receipt_row[2],
+            'cust_surname': receipt_row[3],
+            'cust_name': receipt_row[4],
+            'print_date': receipt_row[5],
+            'sum_total': receipt_row[6],
+            'vat': receipt_row[7],
+            'SPT': receipt_row[8],
+            'percent': receipt_row[9]
+        }
+
+        c.execute("""
+            SELECT P.product_name, SP.selling_price, S.product_number,
+                   (SP.selling_price * S.product_number) AS total
+            FROM (Sale S
+            JOIN Store_Product SP 
+            ON S.UPC = SP.UPC)
+            JOIN Product P 
+            ON SP.id_product = P.id_product
+            WHERE S.check_number = %s;
+        """, [check_number])
+
+        items = [
+            {
+                'product_name': row[0],
+                'selling_price': row[1],
+                'product_number': row[2],
+                'total': row[3],
+            }
+            for row in c.fetchall()
+        ]
+
+    context = {
+        'receipt': receipt,
+        'items': items,
+    }
+
+    return render(request, 'templates_manager/receipt_details.html', context)
