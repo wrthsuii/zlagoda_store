@@ -131,7 +131,7 @@ def manage_customer_cards(request):
 
     query = """
     SELECT * 
-    FROM Customer_Card;
+    FROM Customer_Card
     """
     params = []
     if percent_filter:

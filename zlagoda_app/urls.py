@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth.views import LogoutView
-from .views import auth, manager_dashboard
+from .views import auth, manager_dashboard, cashier_dashboard
 
 urlpatterns = [
     path('', auth.check_login, name='login'),
@@ -31,5 +31,12 @@ urlpatterns = [
     path("reports/", manager_dashboard.manage_reports, name="manage_reports"),
     path("receipts/", manager_dashboard.manage_receipts, name="manage_receipts"),
     path("delete_check/", manager_dashboard.delete_check, name="delete_check"),
-    path('receipts/<str:check_number>/', manager_dashboard.receipt_details, name='receipt_details'),
+    path("receipts/<str:check_number>/", manager_dashboard.receipt_details, name="receipt_details"),
+    path("cashier_customer_cards/", cashier_dashboard.cashier_customer_cards, name="cashier_customer_cards"),
+    path("cashier_add_customer_card/", cashier_dashboard.cashier_add_customer_card, name="cashier_add_customer_card"),
+    path("cashier_edit_customer_card/", cashier_dashboard.cashier_edit_customer_card, name="cashier_edit_customer_card"),
+    path("cashier_products/", cashier_dashboard.cashier_products, name="cashier_products"),
+    path("cashier_db_products/", cashier_dashboard.cashier_db_products, name="cashier_db_products"),
+    path("cashier_store_products/", cashier_dashboard.cashier_store_products, name="cashier_store_products"),
+    path("cashier_receipts/", cashier_dashboard.cashier_receipts, name="cashier_receipts"),
 ]

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cashier Dashboard | Cashier Space</title>
-  <link rel="icon" href="/img/cashier_icon.png" type="image/x-icon">
+  <title>Customer Cards | Cashier Space</title>
+  <link rel="icon" href="/img/manager_icon.png" type="image/x-icon">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
@@ -83,7 +83,7 @@
       max-width: 400px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
-  </style>
+</style>
 </head>
 <body class="bg-[#f2ebd9] text-gray-800 min-h-screen">
   <!-- Navigation -->
@@ -93,36 +93,46 @@
         <div class="nav-icon bg-white text-red-800 mr-2">
           <i class="fas fa-cash-register"></i>
         </div>
-        Cashier Space
-      </div>
+          <a href="/cashier" class="flex items-center text-white-600 hover:underline">
+          Cashier Space
+          </a>
+        </div>
         <ul class="flex space-x-6 text-lg">
-            <li><a href="/cashier_products" class="text-white hover:text-red-200 flex items-center mr-4">
+            <li><a href="/cashier_products" class="font-extrabold text-white flex items-center">
                 <i class="fas fa-box-open mr-1"></i>Products</a></li>
             <li><a href="/cashier_customer_cards" class="text-white hover:text-red-200 flex items-center mr-4">
                 <i class="fas fa-id-card mr-1"></i>Customers</a></li>
-            <li><a href="cashier_receipts/" class="text-white hover:text-red-200 flex items-center mr-4">
+            <li><a href="/cashier_receipts" class="text-white hover:text-red-200 flex items-center mr-4">
                 <i class="fas fa-receipt mr-1"></i>Receipts</a></li>
             <li><a href="/profile" class="text-white hover:text-red-200 flex items-center mr-4">
                 <i class="fas fa-user mr-1"></i> Profile</a></li>
             <li><button onclick="openModal('logoutModal')" class="text-red-300 hover:text-red-100 flex items-center">
-                <i class="fas fa-sign-out-alt mr-1"></i>Log Out</button></li>
+                <i class="fas fa-sign-out-alt mr-1"></i>Log Out</button>
+            </li>
         </ul>
     </div>
   </nav>
 
-  <!-- Main Content -->
   <div class="max-w-7xl mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold text-red-800 mb-12 text-center">Cashier Dashboard</h1>
-      <h2 class="text-3xl font-bold text-gray-800 mb-10 text-center">Welcome, {{ user_name }}!</h2>
+    <h1 class="text-3xl font-bold text-yellow-900 mb-12 text-center">Product Management</h1>
 
-    <div class="flex flex-wrap justify-center gap-8">
-      <!-- New Checkout Card -->
-      <a href="/new-checkout" class="dashboard-card flex flex-col items-center justify-center p-6">
-        <div class="card-icon">
-          <i class="fas fa-cash-register"></i>
+    <div class="flex flex-col md:flex-row justify-center items-center gap-8">
+      <!-- Product Database Card -->
+      <a href="/cashier_db_products" class="product-card bg-white rounded-lg shadow-md flex flex-col items-center justify-center p-6">
+        <div class="product-icon">
+          <i class="fas fa-warehouse"></i>
         </div>
-        <h2 class="text-xl font-bold text-red-800 mb-2">New Checkout</h2>
-        <p class="text-gray-600 text-center">Start a new customer checkout</p>
+        <h2 class="text-2xl font-bold text-yellow-900 mb-2">Product Database</h2>
+        <p class="text-gray-600 text-center">View all products in the system database</p>
+      </a>
+
+      <!-- Store Products Card -->
+      <a href="/cashier_store_products" class="product-card bg-white rounded-lg shadow-md flex flex-col items-center justify-center p-6">
+        <div class="product-icon">
+          <i class="fas fa-store"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-yellow-900 mb-2">Store Products</h2>
+        <p class="text-gray-600 text-center">View products available in the store</p>
       </a>
     </div>
   </div>
@@ -132,10 +142,7 @@
     <div class="modal-content">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-semibold flex items-center">
-          <div class="nav-icon bg-red-600 text-white mr-2">
-            <i class="fas fa-sign-out-alt"></i>
-          </div>
-          Logout Confirmation
+          <i class="fas fa-sign-out-alt mr-2 text-red-600"></i>Logout Confirmation
         </h2>
         <button onclick="closeModal('logoutModal')" class="text-gray-500 hover:text-gray-700">
           <i class="fas fa-times"></i>
@@ -143,11 +150,11 @@
       </div>
       <p class="mb-6">Are you sure you want to log out of the system?</p>
       <div class="flex justify-end space-x-3">
-        <button onclick="closeModal('logoutModal')" class="px-4 py-2 bg-gray-300 rounded-full hover:bg-gray-400">
+        <button onclick="closeModal('logoutModal')" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400">
           Cancel
         </button>
-        <a href="/logout" class="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 text-center flex items-center">
-          <i class="fas fa-sign-out-alt mr-2"></i>Log out
+        <a href="/logout" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-center">
+          <i class="fas fa-sign-out-alt mr-1"></i>Log out
         </a>
       </div>
     </div>

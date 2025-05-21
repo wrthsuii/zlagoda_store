@@ -3,9 +3,12 @@ import psycopg2
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from decouple import config
+from django.contrib.auth import login as auth_login
+
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
+
 
 def check_login(request):
     if request.method == 'POST':
@@ -27,9 +30,9 @@ def check_login(request):
         )
         cur = conn.cursor()
 
-        # SQL query to check user credentials
+        # SQL query to check user credentials and get more info
         query = """
-                SELECT id_employee, role_login
+                SELECT id_employee, role_login, empl_name, empl_surname
                 FROM Employee
                 WHERE role_login = %s AND password_hash = %s
                 """
@@ -40,9 +43,14 @@ def check_login(request):
         conn.close()
 
         if result:
+            # Store user info in session
+            request.session['user_id'] = result[0]
+            request.session['user_role'] = result[1]
+            request.session['user_name'] = f"{result[3]} {result[2]}"
+
             if result[1] == 'manager':
                 return redirect('manager_dashboard')
-            elif result[1] in ['cashier1', 'cashier2', 'cashier3', 'cashier4']:
+            else:  # For cashiers
                 return redirect('cashier_dashboard')
         else:
             messages.error(request, 'Invalid login or password or you are not authorized to access the system.')
@@ -51,8 +59,22 @@ def check_login(request):
 
 
 def manager_dashboard(request):
-    return render(request, 'templates_manager/manager_dashboard.html')
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
+    return render(request, 'templates_manager/manager_dashboard.html', {
+        'user_name': request.session.get('user_name')
+    })
 
 
 def cashier_dashboard(request):
-    return render(request, 'templates_cashier/cashier_dashboard.html')
+    user_role = request.session.get('user_role')
+    if user_role not in ['cashier1', 'cashier2', 'cashier3', 'cashier4']:
+        return redirect('login')
+
+    # Here you can fetch cashier-specific data from DB if needed
+    cashier_id = request.session.get('user_id')
+
+    return render(request, 'templates_cashier/cashier_dashboard.html', {
+        'user_name': request.session.get('user_name'),
+        'cashier_id': cashier_id
+    })
