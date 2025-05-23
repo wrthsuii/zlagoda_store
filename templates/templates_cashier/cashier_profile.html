@@ -100,7 +100,7 @@
                 <i class="fas fa-box-open mr-1"></i>Products</a></li>
             <li><a href="/cashier_customer_cards" class="text-white hover:text-red-200 flex items-center mr-4">
                 <i class="fas fa-id-card mr-1"></i>Customers</a></li>
-            <li><a href="/cashier_receipts" class="text-white hover:text-red-200 flex items-center mr-4">
+            <li><a href="cashier_receipts/" class="text-white hover:text-red-200 flex items-center mr-4">
                 <i class="fas fa-receipt mr-1"></i>Receipts</a></li>
             <li><a href="/profile" class="text-white hover:text-red-200 flex items-center mr-4">
                 <i class="fas fa-user mr-1"></i> Profile</a></li>
@@ -109,67 +109,5 @@
         </ul>
     </div>
   </nav>
-
-  <!-- Main Content -->
-  <div class="max-w-7xl mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold text-red-800 mb-12 text-center">Cashier Dashboard</h1>
-      <h2 class="text-3xl font-bold text-gray-800 mb-10 text-center">Welcome, {{ user_name }}!</h2>
-
-    <div class="flex flex-wrap justify-center gap-8">
-      <!-- New Checkout Card -->
-      <a href="/new-checkout" class="dashboard-card flex flex-col items-center justify-center p-6">
-        <div class="card-icon">
-          <i class="fas fa-cash-register"></i>
-        </div>
-        <h2 class="text-xl font-bold text-red-800 mb-2">New Checkout</h2>
-        <p class="text-gray-600 text-center">Start a new customer checkout</p>
-      </a>
-    </div>
-  </div>
-
-  <!-- Logout Modal -->
-  <div id="logoutModal" class="modal">
-    <div class="modal-content">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-semibold flex items-center">
-          <div class="nav-icon bg-red-600 text-white mr-2">
-            <i class="fas fa-sign-out-alt"></i>
-          </div>
-          Logout Confirmation
-        </h2>
-        <button onclick="closeModal('logoutModal')" class="text-gray-500 hover:text-gray-700">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <p class="mb-6">Are you sure you want to log out of the system?</p>
-      <div class="flex justify-end space-x-3">
-        <button onclick="closeModal('logoutModal')" class="px-4 py-2 bg-gray-300 rounded-full hover:bg-gray-400">
-          Cancel
-        </button>
-        <a href="/logout" class="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 text-center flex items-center">
-          <i class="fas fa-sign-out-alt mr-2"></i>Log out
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // Modal functions
-    function openModal(id) {
-      document.getElementById(id).style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).style.display = 'none';
-      document.body.style.overflow = 'auto';
-    }
-
-    window.onclick = function(event) {
-      if (event.target.className === 'modal') {
-        closeModal('logoutModal');
-      }
-    }
-  </script>
 </body>
 </html>

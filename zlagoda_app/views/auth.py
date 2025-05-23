@@ -46,7 +46,7 @@ def check_login(request):
             # Store user info in session
             request.session['user_id'] = result[0]
             request.session['user_role'] = result[1]
-            request.session['user_name'] = f"{result[3]} {result[2]}"
+            request.session['user_name'] = f"{result[2]} {result[3]}"
 
             if result[1] == 'manager':
                 return redirect('manager_dashboard')

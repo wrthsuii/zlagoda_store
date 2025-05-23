@@ -232,39 +232,44 @@ def cashier_store_products(request):
     }
     return render(request, "templates_cashier/cashier_store_products.html", context)
 
+
 def cashier_receipts(request):
+    """
+    9. Переглянути список усіх чеків, що створив касир за цей день;
+    10. Переглянути список усіх чеків, що створив касир за певний період часу;
+    11. За номером чеку вивести усю інформацію про даний чек, в тому числі
+    інформацію про назву, к-сть та ціну товарів, придбаних в даному чеку.
+    """
+    cashier_id = request.session.get('user_id')
+
     page_number = request.GET.get('page', 1)
     date_from = request.GET.get('start_date')
     date_to = request.GET.get('end_date')
 
-    cashier_id = request.user.id_employee  # або request.user.id_employee — як у вас реалізовано
+    if not date_from or not date_to:
+        today = date.today().isoformat()
+        date_from = today
+        date_to = today
 
     query = """
-    SELECT C.check_number, C.id_employee, C.card_number, C.print_date, 
-           C.sum_total, C.vat
+    SELECT C.check_number, C.print_date, C.sum_total
     FROM "Check" C
+    JOIN Employee E ON C.id_employee = E.id_employee
     WHERE C.id_employee = %s
+      AND C.print_date::date BETWEEN %s AND %s
+    ORDER BY C.print_date DESC, C.check_number DESC
     """
-    params = [cashier_id]
+    params = [cashier_id, date_from, date_to]
 
-    if date_from and date_to:
-        query += " AND C.print_date BETWEEN %s AND %s"
-        params.extend([date_from, date_to])
-
-    query += " ORDER BY C.print_date DESC, C.check_number DESC"
-
-    with connection.cursor() as c:
-        c.execute(query, params)
-        rows = c.fetchall()
+    with connection.cursor() as cursor:
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
 
     receipts = [
         {
             'check_number': row[0],
-            'id_employee': row[1],
-            'card_number': row[2],
-            'print_date': row[3],
-            'sum_total': row[4],
-            'vat': row[5],
+            'print_date': row[1],
+            'sum_total': row[2],
         }
         for row in rows
     ]
@@ -276,5 +281,11 @@ def cashier_receipts(request):
         'page_obj': page_obj,
         'start_date': date_from,
         'end_date': date_to,
+        'user_name': request.session.get('user_name'),
     }
+
     return render(request, "templates_cashier/cashier_receipts.html", context)
+
+
+def cashier_profile(request):
+    pass

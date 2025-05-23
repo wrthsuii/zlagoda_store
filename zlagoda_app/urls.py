@@ -38,5 +38,6 @@ urlpatterns = [
     path("cashier_products/", cashier_dashboard.cashier_products, name="cashier_products"),
     path("cashier_db_products/", cashier_dashboard.cashier_db_products, name="cashier_db_products"),
     path("cashier_store_products/", cashier_dashboard.cashier_store_products, name="cashier_store_products"),
-    path("cashier_receipts/", cashier_dashboard.cashier_receipts, name="cashier_receipts"),
+    path("profile/<str:cashier_id>/", cashier_dashboard.cashier_profile, name="cashier_profile"),
+    path("cashier_receipts/", cashier_dashboard.cashier_receipts, name='cashier_receipts'),
 ]
