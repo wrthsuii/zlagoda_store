@@ -10,7 +10,8 @@ CREATE TABLE Employee (
     phone_number VARCHAR(13) NOT NULL,
     city VARCHAR(50) NOT NULL,
     street VARCHAR(50) NOT NULL,
-    zip_code VARCHAR(9) NOT NULL
+    zip_code VARCHAR(9) NOT NULL,
+    photo VARCHAR(100) NULL
 );
 
 CREATE TABLE Category (

@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cashier Dashboard | Cashier Space</title>
+  <title>Profile | Cashier Space</title>
   <link rel="icon" href="/img/cashier_icon.png" type="image/x-icon">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-   .modal {
+    .modal {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background-color: rgba(0, 0, 0, 0.5);
@@ -25,89 +25,136 @@
       max-width: 500px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
-    .dashboard-card {
-      width: 300px;
-      height: 200px;
-      transition: all 0.3s ease;
+    .profile-card {
       background-color: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    .dashboard-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    }
-    .card-icon {
-      color: #991b1b;
-      border: 3px solid #991b1b;
+    .profile-pic {
+      width: 150px;
+      height: 150px;
       border-radius: 50%;
-      width: 80px;
-      height: 80px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1rem;
-      font-size: 1.8rem;
-      transition: all 0.3s ease;
+      object-fit: cover;
+      border: 4px solid #991b1b;
     }
-    .dashboard-card:hover .card-icon {
-      background-color: #991b1b;
-      color: white;
+    .info-label {
+      color: #6b7280;
+      font-weight: 500;
     }
-    .nav-icon {
-      width: 36px;
-      height: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      margin-right: 0.5rem;
-    }
-    .nav-link:hover .nav-icon {
-      background-color: rgba(255, 255, 255, 0.2);
-    }
-    .modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 50;
-    }
-    .modal-content {
-      background-color: white;
-      padding: 2rem;
-      border-radius: 0.5rem;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    .info-value {
+      color: #1f2937;
+      font-weight: 600;
     }
   </style>
 </head>
 <body class="bg-[#f2ebd9] text-gray-800 min-h-screen">
-  <!-- Navigation -->
   <nav class="bg-red-800 text-white px-6 py-4 shadow-lg">
     <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <div class="text-2xl font-semibold flex items-center">
-        <div class="nav-icon bg-white text-red-800 mr-2">
+      <a href="/cashier" class="flex items-center text-2xl font-semibold text-white hover:underline">
+        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-white text-red-800 mr-3">
           <i class="fas fa-cash-register"></i>
         </div>
         Cashier Space
-      </div>
-        <ul class="flex space-x-6 text-lg">
-            <li><a href="/cashier_products" class="text-white hover:text-red-200 flex items-center mr-4">
-                <i class="fas fa-box-open mr-1"></i>Products</a></li>
-            <li><a href="/cashier_customer_cards" class="text-white hover:text-red-200 flex items-center mr-4">
-                <i class="fas fa-id-card mr-1"></i>Customers</a></li>
-            <li><a href="cashier_receipts/" class="text-white hover:text-red-200 flex items-center mr-4">
-                <i class="fas fa-receipt mr-1"></i>Receipts</a></li>
-            <li><a href="/profile" class="text-white hover:text-red-200 flex items-center mr-4">
-                <i class="fas fa-user mr-1"></i> Profile</a></li>
-            <li><button onclick="openModal('logoutModal')" class="text-red-300 hover:text-red-100 flex items-center">
-                <i class="fas fa-sign-out-alt mr-1"></i>Log Out</button></li>
-        </ul>
+      </a>
+      <ul class="flex space-x-6 text-lg">
+        <li><a href="/cashier_products" class="text-white hover:text-red-200 flex items-center mr-4">
+          <i class="fas fa-box-open mr-1"></i>Products</a></li>
+        <li><a href="/cashier_customer_cards" class="text-white hover:text-red-200 flex items-center mr-4">
+          <i class="fas fa-id-card mr-1"></i>Customers</a></li>
+        <li><a href="/cashier_receipts" class="text-white hover:text-red-200 flex items-center mr-4">
+          <i class="fas fa-receipt mr-1"></i>Receipts</a></li>
+        <li><a href="/cashier_profile" class="font-extrabold text-white flex items-center">
+          <i class="fas fa-user mr-1"></i> Profile</a></li>
+        <li><button onclick="openModal('logoutModal')" class="text-red-300 hover:text-red-100 flex items-center">
+          <i class="fas fa-sign-out-alt mr-1"></i>Log Out</button>
+        </li>
+      </ul>
     </div>
   </nav>
+
+  <!-- Profile Content -->
+  <div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl font-bold text-red-800 mb-6">My Profile</h1>
+
+      <div class="profile-card p-8">
+        <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+          <!-- Profile Picture -->
+          <div class="flex flex-col items-center">
+            <img src="{{ photo_path }}" class="profile-pic mb-4">
+            <span class="text-xl font-semibold">{{ empl_name }} {{ empl_surname }}</span>
+            <span class="text-xl font-semibold">{{ empl_patronymic }}</span>
+            <span class="text-gray-600">Cashier</span>
+          </div>
+
+          <!-- Profile Information -->
+          <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <p class="info-label">Hire Date</p>
+              <p class="info-value">{{ date_of_start }}</p>
+            </div>
+            <div>
+              <p class="info-label">Date of Birth</p>
+              <p class="info-value">{{ date_of_birth }}</p>
+            </div>
+            <div>
+              <p class="info-label">Phone</p>
+              <p class="info-value">{{ phone_number }}</p>
+            </div>
+            <div>
+              <p class="info-label">Address</p>
+              <p class="info-value">{{ city }}, {{ street }} st., {{ zip_code }} </p>
+            </div>
+            <div>
+              <p class="info-label">Salary</p>
+              <p class="info-value">{{ salary|floatformat:0 }} UAH</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout Modal -->
+  <div id="logoutModal" class="modal">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold flex items-center">
+          <i class="fas fa-sign-out-alt mr-2 text-red-600"></i>Logout Confirmation
+        </h2>
+        <button onclick="closeModal('logoutModal')" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <p class="mb-6">Are you sure you want to log out of the system?</p>
+      <div class="flex justify-end space-x-3">
+        <button onclick="closeModal('logoutModal')" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400">
+          Cancel
+        </button>
+        <a href="/logout" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-center">
+          <i class="fas fa-sign-out-alt mr-1"></i>Log out
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Modal functions
+    function openModal(id) {
+      document.getElementById(id).style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+
+    window.onclick = function(event) {
+      if (event.target.className === 'modal') {
+        closeModal('logoutModal');
+      }
+    }
+  </script>
 </body>
 </html>

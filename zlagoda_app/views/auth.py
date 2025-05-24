@@ -3,7 +3,6 @@ import psycopg2
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from decouple import config
-from django.contrib.auth import login as auth_login
 
 
 def hash_password(password):

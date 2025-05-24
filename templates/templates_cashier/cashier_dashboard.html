@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cashier Dashboard | Cashier Space</title>
+  <title>Checkout | Cashier Space</title>
   <link rel="icon" href="/img/cashier_icon.png" type="image/x-icon">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-   .modal {
+    .modal {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background-color: rgba(0, 0, 0, 0.5);
@@ -25,35 +25,6 @@
       max-width: 500px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
-    .dashboard-card {
-      width: 300px;
-      height: 200px;
-      transition: all 0.3s ease;
-      background-color: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-    .dashboard-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    }
-    .card-icon {
-      color: #991b1b;
-      border: 3px solid #991b1b;
-      border-radius: 50%;
-      width: 80px;
-      height: 80px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1rem;
-      font-size: 1.8rem;
-      transition: all 0.3s ease;
-    }
-    .dashboard-card:hover .card-icon {
-      background-color: #991b1b;
-      color: white;
-    }
     .nav-icon {
       width: 36px;
       height: 36px;
@@ -63,25 +34,27 @@
       border-radius: 50%;
       margin-right: 0.5rem;
     }
-    .nav-link:hover .nav-icon {
-      background-color: rgba(255, 255, 255, 0.2);
+    .product-card {
+      transition: all 0.2s ease;
     }
-    .modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 50;
+    .product-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    .modal-content {
-      background-color: white;
-      padding: 2rem;
-      border-radius: 0.5rem;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background-color: rgba(155, 155, 155, 0.5);
+      border-radius: 3px;
+    }
+    .receipt-item:hover {
+      background-color: #fef2f2;
+    }
+    .category-tab.active {
+      background-color: #991b1b;
+      color: white;
     }
   </style>
 </head>
@@ -95,35 +68,284 @@
         </div>
         Cashier Space
       </div>
-        <ul class="flex space-x-6 text-lg">
-            <li><a href="/cashier_products" class="text-white hover:text-red-200 flex items-center mr-4">
-                <i class="fas fa-box-open mr-1"></i>Products</a></li>
-            <li><a href="/cashier_customer_cards" class="text-white hover:text-red-200 flex items-center mr-4">
-                <i class="fas fa-id-card mr-1"></i>Customers</a></li>
-            <li><a href="/cashier_receipts" class="text-white hover:text-red-200 flex items-center mr-4">
-                <i class="fas fa-receipt mr-1"></i>Receipts</a></li>
-            <li><a href="/profile" class="text-white hover:text-red-200 flex items-center mr-4">
-                <i class="fas fa-user mr-1"></i> Profile</a></li>
-            <li><button onclick="openModal('logoutModal')" class="text-red-300 hover:text-red-100 flex items-center">
-                <i class="fas fa-sign-out-alt mr-1"></i>Log Out</button></li>
-        </ul>
+      <ul class="flex space-x-6 text-lg">
+        <li><a href="/cashier_products" class="text-white hover:text-red-200 flex items-center mr-4">
+          <i class="fas fa-box-open mr-1"></i>Products</a></li>
+        <li><a href="/cashier_customer_cards" class="text-white hover:text-red-200 flex items-center mr-4">
+          <i class="fas fa-id-card mr-1"></i>Customers</a></li>
+        <li><a href="/cashier_receipts" class="text-white hover:text-red-200 flex items-center mr-4">
+          <i class="fas fa-receipt mr-1"></i>Receipts</a></li>
+        <li><a href="/cashier_profile" class="text-white hover:text-red-200 flex items-center mr-4">
+          <i class="fas fa-user mr-1"></i> Profile</a></li>
+        <li><button onclick="openModal('logoutModal')" class="text-red-300 hover:text-red-100 flex items-center">
+          <i class="fas fa-sign-out-alt mr-1"></i>Log Out</button></li>
+      </ul>
     </div>
   </nav>
 
-  <!-- Main Content -->
-  <div class="max-w-7xl mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold text-red-800 mb-12 text-center">Cashier Dashboard</h1>
-      <h2 class="text-3xl font-bold text-gray-800 mb-10 text-center">Welcome, {{ user_name }}!</h2>
-
-    <div class="flex flex-wrap justify-center gap-8">
-      <!-- New Checkout Card -->
-      <a href="/new-checkout" class="dashboard-card flex flex-col items-center justify-center p-6">
-        <div class="card-icon">
-          <i class="fas fa-cash-register"></i>
+  <!-- Main Checkout Interface -->
+  <div class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column - Products -->
+    <div class="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-red-800 flex items-center">
+          <i class="fas fa-boxes mr-3"></i>Products
+        </h2>
+        <div class="relative w-64">
+          <input type="text" id="productSearch" placeholder="Search products..."
+                 class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+          <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
         </div>
-        <h2 class="text-xl font-bold text-red-800 mb-2">New Checkout</h2>
-        <p class="text-gray-600 text-center">Start a new customer checkout</p>
-      </a>
+      </div>
+
+      <!-- Product Categories -->
+      <div class="flex overflow-x-auto pb-2 mb-4 scrollbar-thin">
+        <button class="category-tab active px-4 py-2 mr-2 bg-red-800 text-white rounded-full font-medium whitespace-nowrap"
+                data-category="all">
+          All Products
+        </button>
+        {% for category in categories %}
+        <button class="category-tab px-4 py-2 mr-2 bg-white border border-gray-300 rounded-full font-medium whitespace-nowrap hover:bg-gray-50"
+                data-category="{{ category.category_number }}">
+          {{ category.category_name }}
+        </button>
+        {% endfor %}
+      </div>
+
+      <!-- Product Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 h-[500px] overflow-y-auto scrollbar-thin p-1" id="productGrid">
+        {% for product in products %}
+        <div class="product-card bg-white border border-gray-200 rounded-lg p-4 cursor-pointer"
+             data-product-id="{{ product.id_product }}"
+             data-category="{{ product.category_number }}">
+          <div class="h-24 bg-gray-100 rounded mb-3 flex items-center justify-center">
+            <i class="fas fa-{{ product.icon|default:'box' }} text-3xl text-gray-400"></i>
+          </div>
+          <h3 class="font-bold text-gray-800 mb-1 truncate">{{ product.product_name }}</h3>
+          <p class="text-sm text-gray-600 mb-2 truncate">{{ product.characteristics }}</p>
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-red-800">${{ product.selling_price }}</span>
+            <button class="add-to-cart text-white bg-red-600 hover:bg-red-700 rounded-full w-8 h-8 flex items-center justify-center"
+                    data-upc="{{ product.UPC }}"
+                    data-price="{{ product.selling_price }}"
+                    data-name="{{ product.product_name }}">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Right Column - Current Receipt -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-red-800 flex items-center">
+          <i class="fas fa-receipt mr-3"></i>Current Receipt
+        </h2>
+        <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+          #{{ next_check_number }}
+        </span>
+      </div>
+
+      <!-- Customer Info -->
+      <div class="mb-6">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="font-medium text-gray-700">Customer</h3>
+          <button onclick="openModal('customerModal')" class="text-sm text-red-600 hover:text-red-800 flex items-center">
+            <i class="fas fa-plus-circle mr-1"></i>
+            {% if current_customer %}Change{% else %}Add{% endif %} Customer
+          </button>
+        </div>
+        <div class="flex items-center" id="customerDisplay">
+          {% if current_customer %}
+          <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3">
+            <i class="fas fa-user text-red-800"></i>
+          </div>
+          <div>
+            <span class="font-medium">{{ current_customer.cust_surname }} {{ current_customer.cust_name }}</span>
+            <div class="text-xs text-gray-500">Card: {{ current_customer.card_number }} ({{ current_customer.percent }}% discount)</div>
+          </div>
+          {% else %}
+          <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+            <i class="fas fa-user text-gray-500"></i>
+          </div>
+          <span class="text-gray-500">No customer selected</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Receipt Items -->
+      <div class="border-b border-gray-200 mb-4">
+        <div class="flex justify-between text-sm text-gray-500 font-medium pb-2">
+          <span>Item</span>
+          <span>Total</span>
+        </div>
+      </div>
+
+      <div class="h-96 overflow-y-auto scrollbar-thin mb-4" id="receiptItems">
+        {% for item in receipt_items %}
+        <div class="receipt-item py-3 border-b border-gray-100 flex justify-between items-center" data-upc="{{ item.UPC }}">
+          <div>
+            <h4 class="font-medium">{{ item.product_name }}</h4>
+            <div class="flex items-center mt-1">
+              <button class="decrease-qty text-gray-400 hover:text-red-600 w-6 h-6 flex items-center justify-center">
+                <i class="fas fa-minus"></i>
+              </button>
+              <span class="mx-2 quantity">{{ item.product_number }}</span>
+              <button class="increase-qty text-gray-400 hover:text-red-600 w-6 h-6 flex items-center justify-center">
+                <i class="fas fa-plus"></i>
+              </button>
+              <span class="text-gray-500 text-sm ml-2">${{ item.selling_price }} each</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="font-medium item-total">${{ item.selling_price_total }}</span>
+            <button class="remove-item block text-red-500 hover:text-red-700 text-sm mt-1">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Totals -->
+      <div class="border-t border-gray-200 pt-4 mb-6">
+        <div class="flex justify-between mb-2">
+          <span class="text-gray-600">Subtotal:</span>
+          <span class="font-medium" id="subtotal">${{ subtotal|floatformat:2 }}</span>
+        </div>
+        <div class="flex justify-between mb-2">
+          <span class="text-gray-600">Discount:</span>
+          <span class="font-medium" id="discount">{% if current_customer %}-${{ discount_amount|floatformat:2 }} ({{ current_customer.percent }}%){% else %}$0.00{% endif %}</span>
+        </div>
+        <div class="flex justify-between mb-2">
+          <span class="text-gray-600">Tax ({{ vat_rate }}%):</span>
+          <span class="font-medium" id="tax">${{ tax_amount|floatformat:2 }}</span>
+        </div>
+        <div class="flex justify-between text-lg font-bold">
+          <span>Total:</span>
+          <span class="text-red-800" id="total">${{ total|floatformat:2 }}</span>
+        </div>
+      </div>
+
+      <!-- Payment Buttons -->
+      <div class="grid grid-cols-2 gap-3">
+        <button id="printReceipt" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-4 rounded-lg font-medium flex items-center justify-center">
+          <i class="fas fa-print mr-2"></i> Print
+        </button>
+        <button id="processPayment" class="bg-red-700 hover:bg-red-800 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center">
+          <i class="fas fa-credit-card mr-2"></i> Pay
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Selection Modal -->
+  <div id="customerModal" class="modal">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold flex items-center">
+          <div class="nav-icon bg-red-600 text-white mr-2">
+            <i class="fas fa-users"></i>
+          </div>
+          Select Customer
+        </h2>
+        <button onclick="closeModal('customerModal')" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="mb-4">
+        <div class="relative">
+          <input type="text" id="customerSearch" placeholder="Search customers..."
+                 class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+          <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+        </div>
+      </div>
+      <div class="h-96 overflow-y-auto scrollbar-thin mb-4">
+        {% for customer in customers %}
+        <div class="customer-item p-3 border-b border-gray-100 flex items-center cursor-pointer hover:bg-gray-50"
+             data-card-number="{{ customer.card_number }}"
+             data-name="{{ customer.cust_name }}"
+             data-surname="{{ customer.cust_surname }}"
+             data-percent="{{ customer.percent }}">
+          <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3">
+            <i class="fas fa-user text-red-800"></i>
+          </div>
+          <div>
+            <div class="font-medium">{{ customer.cust_surname }} {{ customer.cust_name }}</div>
+            <div class="text-sm text-gray-500">{{ customer.phone_number }} • {{ customer.card_number }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="flex justify-end space-x-3">
+        <button onclick="closeModal('customerModal')" class="px-4 py-2 bg-gray-300 rounded-full hover:bg-gray-400">
+          Cancel
+        </button>
+        <button id="clearCustomer" class="px-4 py-2 bg-gray-600 text-white rounded-full hover:bg-gray-700">
+          Clear Customer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div id="paymentModal" class="modal">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold flex items-center">
+          <div class="nav-icon bg-red-600 text-white mr-2">
+            <i class="fas fa-credit-card"></i>
+          </div>
+          Process Payment
+        </h2>
+        <button onclick="closeModal('paymentModal')" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="mb-6">
+        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+          <div class="flex justify-between text-lg font-bold mb-2">
+            <span>Total Amount:</span>
+            <span class="text-red-800">${{ total|floatformat:2 }}</span>
+          </div>
+          {% if current_customer %}
+          <div class="text-sm text-gray-600">Includes {{ current_customer.percent }}% discount for {{ current_customer.cust_surname }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+          <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500">
+            <option>Cash</option>
+            <option>Credit Card</option>
+            <option>Debit Card</option>
+            <option>Mobile Payment</option>
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Amount Received</label>
+          <input type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+                 placeholder="0.00" id="amountReceived">
+        </div>
+
+        <div class="bg-gray-50 p-3 rounded-lg hidden" id="changeContainer">
+          <div class="flex justify-between font-medium">
+            <span>Change Due:</span>
+            <span id="changeAmount">$0.00</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end space-x-3">
+        <button onclick="closeModal('paymentModal')" class="px-4 py-2 bg-gray-300 rounded-full hover:bg-gray-400">
+          Cancel
+        </button>
+        <button id="confirmPayment" class="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700">
+          Confirm Payment
+        </button>
+      </div>
     </div>
   </div>
 
@@ -167,8 +389,116 @@
 
     window.onclick = function(event) {
       if (event.target.className === 'modal') {
-        closeModal('logoutModal');
+        closeModal(event.target.id);
       }
+    }
+
+    // Product search and filtering
+    document.getElementById('productSearch').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const productCards = document.querySelectorAll('.product-card');
+
+      productCards.forEach(card => {
+        const productName = card.querySelector('h3').textContent.toLowerCase();
+        const productDesc = card.querySelector('p').textContent.toLowerCase();
+        const isVisible = productName.includes(searchTerm) || productDesc.includes(searchTerm);
+        card.style.display = isVisible ? 'block' : 'none';
+      });
+    });
+
+    // Category filtering
+    document.querySelectorAll('.category-tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+
+        const category = this.dataset.category;
+        const productCards = document.querySelectorAll('.product-card');
+
+        productCards.forEach(card => {
+          if (category === 'all' || card.dataset.category === category) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Customer selection
+    document.querySelectorAll('.customer-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const cardNumber = this.dataset.cardNumber;
+        const name = this.dataset.name;
+        const surname = this.dataset.surname;
+        const percent = this.dataset.percent;
+
+        // Update customer display
+        const customerDisplay = `
+          <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3">
+            <i class="fas fa-user text-red-800"></i>
+          </div>
+          <div>
+            <span class="font-medium">${surname} ${name}</span>
+            <div class="text-xs text-gray-500">Card: ${cardNumber} (${percent}% discount)</div>
+          </div>
+        `;
+        document.getElementById('customerDisplay').innerHTML = customerDisplay;
+
+        closeModal('customerModal');
+        updateTotals(); // Recalculate with discount
+      });
+    });
+
+    // Clear customer
+    document.getElementById('clearCustomer').addEventListener('click', function() {
+      const customerDisplay = `
+        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+          <i class="fas fa-user text-gray-500"></i>
+        </div>
+        <span class="text-gray-500">No customer selected</span>
+      `;
+      document.getElementById('customerDisplay').innerHTML = customerDisplay;
+      closeModal('customerModal');
+      updateTotals(); // Recalculate without discount
+    });
+
+    // Payment processing
+    document.getElementById('processPayment').addEventListener('click', function() {
+      openModal('paymentModal');
+    });
+
+    // Calculate change
+    document.getElementById('amountReceived').addEventListener('input', function(e) {
+      const amountReceived = parseFloat(e.target.value) || 0;
+      const total = parseFloat({{ total }});
+      const changeContainer = document.getElementById('changeContainer');
+      const changeAmount = document.getElementById('changeAmount');
+
+      if (amountReceived >= total) {
+        const change = amountReceived - total;
+        changeAmount.textContent = '$' + change.toFixed(2);
+        changeContainer.classList.remove('hidden');
+      } else {
+        changeContainer.classList.add('hidden');
+      }
+    });
+
+    // Confirm payment
+    document.getElementById('confirmPayment').addEventListener('click', function() {
+      // Here you would typically submit the receipt to your backend
+      alert('Payment processed successfully! Receipt #{{ next_check_number }}');
+      closeModal('paymentModal');
+      // Reset the receipt interface
+      document.getElementById('receiptItems').innerHTML = '';
+      updateTotals();
+    });
+
+    // Function to update totals
+    function updateTotals() {
+      // This would be calculated from the current receipt items and customer discount
+      // In a real implementation, you would send this to your backend to calculate
+      console.log('Updating totals...');
     }
   </script>
 </body>
