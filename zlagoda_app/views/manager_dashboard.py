@@ -339,7 +339,8 @@ def manage_product_database(request):
     categories = [row[0] for row in category_rows]
 
     query1 = """
-        SELECT P.id_product, P.category_number, P.product_name, P.characteristics
+        SELECT P.id_product, C.category_name, P.category_number, 
+               P.product_name, P.characteristics
         FROM Product P
         JOIN Category C 
         ON P.category_number = C.category_number
@@ -357,9 +358,10 @@ def manage_product_database(request):
     products = [
         {
             'id_product': row[0],
-            'category_number': row[1],
-            'product_name': row[2],
-            'characteristics': row[3]
+            'category_name': row[1],
+            'category_number': row[2],
+            'product_name': row[3],
+            'characteristics': row[4]
         }
         for row in rows
     ]

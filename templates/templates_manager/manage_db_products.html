@@ -112,8 +112,11 @@
             {% for p in page_obj %}
             <tr class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap">{{ p.id_product }}</td>
-              <td class="px-6 py-4 whitespace-nowrap">{{ p.category_number }}</td>
-              <td class="px-6 py-4 whitespace-nowrap">{{ p.product_name }}</td>
+              <td class="px-6 py-4">
+                <div class="font-medium">{{ p.category_name }}</div>
+                <div class="text-gray-500">No: {{ p.category_number }}</div>
+              </td>
+              <td class="px-6 py-4">{{ p.product_name }}</td>
               <td class="px-6 py-4">{{ p.characteristics }}</td>
               <td class="px-6 py-4 whitespace-nowrap flex space-x-2">
                 <button onclick="openEditModal('{{ p.id_product }}', '{{ p.category_number }}', '{{ p.product_name }}', '{{ p.characteristics }}')"

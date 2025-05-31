@@ -189,10 +189,7 @@
             <tr class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap">{{ p.upc }}</td>
               <td class="px-6 py-4 whitespace-nowrap">{{ p.upc_prom|default:"-" }}</td>
-              <td class="px-6 py-4">
-                <div class="font-medium">{{ p.product_name }}</div>
-                <div class="text-gray-500">ID: {{ p.id_product }}</div>
-              </td>
+              <td class="px-6 py-4 whitespace-nowrap">{{ p.product_name }}</td>
               <td class="px-6 py-4 whitespace-nowrap">{{ p.selling_price|floatformat:2 }} UAH</td>
               <td class="px-6 py-4 whitespace-nowrap">{{ p.products_number }}</td>
               <td class="px-6 py-4 whitespace-nowrap">

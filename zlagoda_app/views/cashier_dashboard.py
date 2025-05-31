@@ -122,9 +122,11 @@ def cashier_db_products(request):
     categories = [row[0] for row in category_rows]
 
     query = """
-        SELECT P.id_product, P.category_number, P.product_name, P.characteristics
+        SELECT C.category_name, P.product_name, P.characteristics
         FROM Product P
-        JOIN Category C ON P.category_number = C.category_number
+        JOIN Category C 
+        ON P.category_number = C.category_number
+        
     """
     conditions = []
     params = []
@@ -148,10 +150,9 @@ def cashier_db_products(request):
 
     products = [
         {
-            'id_product': row[0],
-            'category_number': row[1],
-            'product_name': row[2],
-            'characteristics': row[3]
+            'category_name': row[0],
+            'product_name': row[1],
+            'characteristics': row[2]
         }
         for row in rows
     ]
@@ -183,7 +184,7 @@ def cashier_store_products(request):
     upc_search = request.GET.get('UPC', '').strip()
 
     query = """
-    SELECT SP.UPC, SP.UPC_prom, SP.id_product, P.product_name, SP.selling_price,
+    SELECT SP.UPC, SP.UPC_prom, P.product_name, SP.selling_price,
            SP.products_number, SP.promotional_product
     FROM Store_Product SP
     JOIN Product P
@@ -213,11 +214,10 @@ def cashier_store_products(request):
         {
             'upc': row[0],
             'upc_prom': row[1],
-            'id_product': row[2],
-            'product_name': row[3],
-            'selling_price': row[4],
-            'products_number': row[5],
-            'promotional_product': row[6]
+            'product_name': row[2],
+            'selling_price': row[3],
+            'products_number': row[4],
+            'promotional_product': row[5]
         }
         for row in rows
     ]
