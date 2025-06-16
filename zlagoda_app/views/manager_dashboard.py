@@ -759,9 +759,8 @@ def receipt_details(request, check_number):
     """
     with connection.cursor() as c:
         c.execute("""
-            SELECT C.check_number, E.empl_surname, C.card_number, CC.cust_surname,
-                   CC.cust_name, C.print_date, C.sum_total, C.vat, SUM(S.selling_price_total) AS SPT,
-                   CC.percent
+            SELECT C.check_number, E.empl_surname, C.card_number, 
+                   C.print_date, C.sum_total, C.vat, SUM(S.selling_price_total) AS SPT
             FROM (("Check" C
             JOIN Employee E 
             ON C.id_employee = E.id_employee)
@@ -769,8 +768,8 @@ def receipt_details(request, check_number):
             ON C.card_number = CC.card_number)
             JOIN Sale S ON C.check_number = S.check_number
             WHERE C.check_number = %s
-            GROUP BY C.check_number, E.empl_surname, C.card_number, CC.cust_surname,
-                     CC.cust_name, C.print_date, C.sum_total, C.vat, CC.percent;
+            GROUP BY C.check_number, E.empl_surname, C.card_number, C.print_date, 
+                     C.sum_total, C.vat;
         """, [check_number])
         receipt_row = c.fetchone()
 
@@ -778,13 +777,10 @@ def receipt_details(request, check_number):
             'check_number': receipt_row[0],
             'empl_surname': receipt_row[1],
             'card_number': receipt_row[2],
-            'cust_surname': receipt_row[3],
-            'cust_name': receipt_row[4],
-            'print_date': receipt_row[5],
-            'sum_total': receipt_row[6],
-            'vat': receipt_row[7],
-            'SPT': receipt_row[8],
-            'percent': receipt_row[9]
+            'print_date': receipt_row[3],
+            'sum_total': receipt_row[4],
+            'vat': receipt_row[5],
+            'SPT': receipt_row[6],
         }
 
         c.execute("""

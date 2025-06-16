@@ -5,7 +5,7 @@ from .views import auth, manager_dashboard, cashier_dashboard
 urlpatterns = [
     path('', auth.check_login, name='login'),
     path('manager/', auth.manager_dashboard, name='manager_dashboard'),
-    path('cashier/', auth.cashier_dashboard, name='cashier_dashboard'),
+    path('cashier/', auth.cashier_dashboard, name='create_receipt'),
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
     path('employees/', manager_dashboard.manage_employees, name='manage_employees'),
     path("add_employee/", manager_dashboard.add_employee, name="add_employee"),
@@ -39,5 +39,6 @@ urlpatterns = [
     path("cashier_db_products/", cashier_dashboard.cashier_db_products, name="cashier_db_products"),
     path("cashier_store_products/", cashier_dashboard.cashier_store_products, name="cashier_store_products"),
     path("cashier_profile/", cashier_dashboard.cashier_profile, name="cashier_profile"),
-    path("cashier_receipts/", cashier_dashboard.cashier_receipts, name='cashier_receipts'),
+    path("cashier_receipts/", cashier_dashboard.cashier_receipts, name="cashier_receipts"),
+    path("create_receipt/", cashier_dashboard.create_receipt, name="create_receipt"),
 ]

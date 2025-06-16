@@ -1,10 +1,177 @@
 from django.shortcuts import render, redirect
-from django.db import connection, IntegrityError
+from django.db import connection
 from django.core.paginator import Paginator
-from django.contrib import messages
-from datetime import date
+from datetime import date, datetime
+import json
+from django.db import transaction
+from django.http import JsonResponse
+import random
 
-#===========CUSTOMERS===========
+def create_receipt(request):
+    """
+    7. Здійснювати продаж товарів (додавання чеків);
+    """
+    if request.method == 'GET':
+        card_filter = request.GET.get('card', '')
+        product_search = request.GET.get('product_search', '')
+
+        with connection.cursor() as c:
+            c.execute("""
+                        SELECT card_number, cust_surname, cust_name
+                        FROM Customer_Card
+                        ORDER BY cust_surname, cust_name
+                    """)
+            cards = [
+                {'card_number': row[0], 'cust_surname': row[1], 'cust_name': row[2]}
+                for row in c.fetchall()
+            ]
+
+        with connection.cursor() as c:
+            if product_search:
+                c.execute("""
+                            SELECT SP.UPC, P.product_name, SP.selling_price
+                            FROM Store_Product SP
+                            JOIN Product P ON SP.id_product = P.id_product
+                            WHERE P.product_name ILIKE %s
+                            ORDER BY P.product_name
+                            LIMIT 10
+                        """, ['%' + product_search + '%'])
+            else:
+                c.execute("""
+                            SELECT SP.UPC, P.product_name, SP.selling_price
+                            FROM Store_Product SP
+                            JOIN Product P ON SP.id_product = P.id_product
+                            ORDER BY P.product_name
+                            LIMIT 50
+                        """)
+
+            products = [
+                {
+                    'UPC': row[0],
+                    'product_name': row[1],
+                    'price': float(row[2])
+                }
+                for row in c.fetchall()
+            ]
+
+        context = {
+            'cards': cards,
+            'selected_card': card_filter,
+            'products': products,
+            'searched_product': product_search,
+            'cashier_id': request.session.get('user_id'),
+            'user_name': request.session.get('user_name')
+        }
+        return render(request, 'templates_cashier/cashier_dashboard.html', context)
+
+    elif request.method == 'POST':
+        try:
+            with transaction.atomic():
+                cashier_id = request.session.get('user_id')
+
+                card_number = request.POST.get('card_number') or None
+                products_json = request.POST.get('products_json')
+
+                if not products_json:
+                    return JsonResponse({'status': 'error', 'message': 'Немає товарів у чеку'}, status=400)
+
+                try:
+                    products = json.loads(products_json)
+                except json.JSONDecodeError:
+                    return JsonResponse({'status': 'error', 'message': 'Невірний формат даних товарів'}, status=400)
+
+                with connection.cursor() as c:
+                    for product in products:
+                        c.execute("""
+                            SELECT products_number 
+                            FROM Store_Product 
+                            WHERE UPC = %s
+                        """, [product['upc']])
+                        result = c.fetchone()
+                        if not result or result[0] < int(product['quantity']):
+                            return JsonResponse({
+                                'status': 'error',
+                                'message': f'Недостатньо товару {product.get("product_name", product["upc"])} на складі'
+                            }, status=400)
+
+                discount_percent = 0
+                if card_number:
+                    with connection.cursor() as c:
+                        c.execute("""
+                            SELECT percent FROM Customer_Card 
+                            WHERE card_number = %s
+                        """, [card_number])
+                        result = c.fetchone()
+                        if result:
+                            discount_percent = result[0] or 0
+
+                sum_wo_discount = sum(float(item['price']) * int(item['quantity']) for item in products)
+
+                discount_amount = sum_wo_discount * (discount_percent / 100)
+                sum_total = sum_wo_discount - discount_amount
+                vat = sum_total * 0.2
+
+                check_number = f"{cashier_id[5:]}{datetime.now().strftime('%d%H%M%S')}{str(random.randint(0, 9))}"
+                print_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+                with connection.cursor() as c:
+                    c.execute("""
+                        INSERT INTO "Check" (
+                            check_number, 
+                            id_employee, 
+                            card_number, 
+                            print_date, 
+                            sum_total, 
+                            vat
+                        ) VALUES (%s, %s, %s, %s, %s, %s)
+                    """, [
+                        check_number,
+                        cashier_id,
+                        card_number,
+                        print_date,
+                        sum_total,
+                        vat
+                    ])
+
+                    for product in products:
+                        c.execute("""
+                                        INSERT INTO Sale (
+                                        UPC, 
+                                        check_number, 
+                                        product_number, 
+                                        selling_price_total
+                                        ) VALUES (%s, %s, %s, %s)
+                                        """, [
+                            product['upc'],
+                            check_number,
+                            product['quantity'],
+                            product['price']
+                        ])
+
+                        c.execute("""
+                                        UPDATE Store_Product 
+                                        SET products_number = products_number - %s 
+                                        WHERE UPC = %s
+                                        """, [
+                            product['quantity'],
+                            product['upc']
+                        ])
+
+                        return JsonResponse({
+                            'status': 'success',
+                            'check_number': check_number,
+                            'sum_total': sum_total,
+                            'vat': vat,
+                            'print_date': print_date
+                        })
+
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Помилка при створенні чеку: {str(e)}',
+                "generated_check_number": check_number,
+                "length": len(check_number),
+            }, status=500)
 
 def cashier_customer_cards(request):
     """

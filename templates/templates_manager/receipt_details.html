@@ -138,10 +138,7 @@
             <div>
                 Customer:
                 {% if receipt.card_number %}
-                    {{ receipt.cust_name }} {{ receipt.cust_surname }}
-                    {% if receipt.percent > 0 %}
-                        ({{ receipt.percent }}% discount)
-                    {% endif %}
+                    {{ receipt.card_number }}
                 {% else %}
                     No customer card
                 {% endif %}

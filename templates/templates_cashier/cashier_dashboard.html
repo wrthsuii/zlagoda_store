@@ -7,6 +7,7 @@
   <link rel="icon" href="/img/cashier_icon.png" type="image/x-icon">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
   <style>
     .modal {
       position: fixed;
@@ -16,14 +17,17 @@
       justify-content: center;
       align-items: center;
       z-index: 50;
+      overflow-y: auto;
     }
     .modal-content {
       background-color: white;
       padding: 2rem;
       border-radius: 0.5rem;
       width: 90%;
-      max-width: 500px;
+      max-width: 900px;
+      max-height: 90vh;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      overflow-y: auto;
     }
     .nav-icon {
       width: 36px;
@@ -34,31 +38,52 @@
       border-radius: 50%;
       margin-right: 0.5rem;
     }
-    .product-card {
-      transition: all 0.2s ease;
+    .product-icon {
+      color: darkred;
+      border: 3px solid darkred;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      transition: all 0.3s ease;
     }
-    .product-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .scrollbar-thin::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    .scrollbar-thin::-webkit-scrollbar-thumb {
-      background-color: rgba(155, 155, 155, 0.5);
-      border-radius: 3px;
-    }
-    .receipt-item:hover {
-      background-color: #fef2f2;
-    }
-    .category-tab.active {
-      background-color: #991b1b;
+    .product-card:hover .product-icon {
+      background-color: darkred;
       color: white;
+    }
+    #productsPreview {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .product-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #eee;
+    }
+    .select2-container--default .select2-selection--single {
+      height: 42px;
+      border-radius: 0.375rem;
+      border: 1px solid #d1d5db;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+      line-height: 42px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+      height: 40px;
+    }
+    .select2-results__option--highlighted {
+      background-color: #f3f4f6 !important;
+      color: #111827 !important;
     }
   </style>
 </head>
 <body class="bg-[#f2ebd9] text-gray-800 min-h-screen">
+
   <!-- Navigation -->
   <nav class="bg-red-800 text-white px-6 py-4 shadow-lg">
     <div class="max-w-7xl mx-auto flex justify-between items-center">
@@ -83,268 +108,95 @@
     </div>
   </nav>
 
-  <!-- Main Checkout Interface -->
-  <div class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Left Column - Products -->
-    <div class="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-red-800 flex items-center">
-          <i class="fas fa-boxes mr-3"></i>Products
-        </h2>
-        <div class="relative w-64">
-          <input type="text" id="productSearch" placeholder="Search products..."
-                 class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
-          <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+  <!-- Main Content -->
+  <main class="container mx-auto py-8 px-4">
+    <!-- Create Receipt Card -->
+    <div class="flex justify-center">
+      <button onclick="openModal('receiptModal')" class="product-card bg-white rounded-lg shadow-md flex flex-col items-center justify-center p-8 w-64 h-96 transition transform hover:-translate-y-1 hover:shadow-xl">
+        <div class="product-icon w-20 h-20 text-3xl">
+          <i class="fas fa-receipt"></i>
         </div>
-      </div>
-
-      <!-- Product Categories -->
-      <div class="flex overflow-x-auto pb-2 mb-4 scrollbar-thin">
-        <button class="category-tab active px-4 py-2 mr-2 bg-red-800 text-white rounded-full font-medium whitespace-nowrap"
-                data-category="all">
-          All Products
-        </button>
-        {% for category in categories %}
-        <button class="category-tab px-4 py-2 mr-2 bg-white border border-gray-300 rounded-full font-medium whitespace-nowrap hover:bg-gray-50"
-                data-category="{{ category.category_number }}">
-          {{ category.category_name }}
-        </button>
-        {% endfor %}
-      </div>
-
-      <!-- Product Grid -->
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 h-[500px] overflow-y-auto scrollbar-thin p-1" id="productGrid">
-        {% for product in products %}
-        <div class="product-card bg-white border border-gray-200 rounded-lg p-4 cursor-pointer"
-             data-product-id="{{ product.id_product }}"
-             data-category="{{ product.category_number }}">
-          <div class="h-24 bg-gray-100 rounded mb-3 flex items-center justify-center">
-            <i class="fas fa-{{ product.icon|default:'box' }} text-3xl text-gray-400"></i>
-          </div>
-          <h3 class="font-bold text-gray-800 mb-1 truncate">{{ product.product_name }}</h3>
-          <p class="text-sm text-gray-600 mb-2 truncate">{{ product.characteristics }}</p>
-          <div class="flex justify-between items-center">
-            <span class="font-bold text-red-800">${{ product.selling_price }}</span>
-            <button class="add-to-cart text-white bg-red-600 hover:bg-red-700 rounded-full w-8 h-8 flex items-center justify-center"
-                    data-upc="{{ product.UPC }}"
-                    data-price="{{ product.selling_price }}"
-                    data-name="{{ product.product_name }}">
-              <i class="fas fa-plus"></i>
-            </button>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
+        <h2 class="text-2xl font-bold text-red-900 mt-4 mb-2 text-center">Create Receipt</h2>
+        <p class="text-gray-600 text-center">Click to open receipt form</p>
+      </button>
     </div>
+  </main>
 
-    <!-- Right Column - Current Receipt -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-red-800 flex items-center">
-          <i class="fas fa-receipt mr-3"></i>Current Receipt
-        </h2>
-        <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
-          #{{ next_check_number }}
-        </span>
-      </div>
-
-      <!-- Customer Info -->
-      <div class="mb-6">
-        <div class="flex justify-between items-center mb-2">
-          <h3 class="font-medium text-gray-700">Customer</h3>
-          <button onclick="openModal('customerModal')" class="text-sm text-red-600 hover:text-red-800 flex items-center">
-            <i class="fas fa-plus-circle mr-1"></i>
-            {% if current_customer %}Change{% else %}Add{% endif %} Customer
-          </button>
-        </div>
-        <div class="flex items-center" id="customerDisplay">
-          {% if current_customer %}
-          <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3">
-            <i class="fas fa-user text-red-800"></i>
-          </div>
-          <div>
-            <span class="font-medium">{{ current_customer.cust_surname }} {{ current_customer.cust_name }}</span>
-            <div class="text-xs text-gray-500">Card: {{ current_customer.card_number }} ({{ current_customer.percent }}% discount)</div>
-          </div>
-          {% else %}
-          <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
-            <i class="fas fa-user text-gray-500"></i>
-          </div>
-          <span class="text-gray-500">No customer selected</span>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- Receipt Items -->
-      <div class="border-b border-gray-200 mb-4">
-        <div class="flex justify-between text-sm text-gray-500 font-medium pb-2">
-          <span>Item</span>
-          <span>Total</span>
-        </div>
-      </div>
-
-      <div class="h-96 overflow-y-auto scrollbar-thin mb-4" id="receiptItems">
-        {% for item in receipt_items %}
-        <div class="receipt-item py-3 border-b border-gray-100 flex justify-between items-center" data-upc="{{ item.UPC }}">
-          <div>
-            <h4 class="font-medium">{{ item.product_name }}</h4>
-            <div class="flex items-center mt-1">
-              <button class="decrease-qty text-gray-400 hover:text-red-600 w-6 h-6 flex items-center justify-center">
-                <i class="fas fa-minus"></i>
-              </button>
-              <span class="mx-2 quantity">{{ item.product_number }}</span>
-              <button class="increase-qty text-gray-400 hover:text-red-600 w-6 h-6 flex items-center justify-center">
-                <i class="fas fa-plus"></i>
-              </button>
-              <span class="text-gray-500 text-sm ml-2">${{ item.selling_price }} each</span>
-            </div>
-          </div>
-          <div class="text-right">
-            <span class="font-medium item-total">${{ item.selling_price_total }}</span>
-            <button class="remove-item block text-red-500 hover:text-red-700 text-sm mt-1">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-
-      <!-- Totals -->
-      <div class="border-t border-gray-200 pt-4 mb-6">
-        <div class="flex justify-between mb-2">
-          <span class="text-gray-600">Subtotal:</span>
-          <span class="font-medium" id="subtotal">${{ subtotal|floatformat:2 }}</span>
-        </div>
-        <div class="flex justify-between mb-2">
-          <span class="text-gray-600">Discount:</span>
-          <span class="font-medium" id="discount">{% if current_customer %}-${{ discount_amount|floatformat:2 }} ({{ current_customer.percent }}%){% else %}$0.00{% endif %}</span>
-        </div>
-        <div class="flex justify-between mb-2">
-          <span class="text-gray-600">Tax ({{ vat_rate }}%):</span>
-          <span class="font-medium" id="tax">${{ tax_amount|floatformat:2 }}</span>
-        </div>
-        <div class="flex justify-between text-lg font-bold">
-          <span>Total:</span>
-          <span class="text-red-800" id="total">${{ total|floatformat:2 }}</span>
-        </div>
-      </div>
-
-      <!-- Payment Buttons -->
-      <div class="grid grid-cols-2 gap-3">
-        <button id="printReceipt" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-4 rounded-lg font-medium flex items-center justify-center">
-          <i class="fas fa-print mr-2"></i> Print
-        </button>
-        <button id="processPayment" class="bg-red-700 hover:bg-red-800 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center">
-          <i class="fas fa-credit-card mr-2"></i> Pay
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Customer Selection Modal -->
-  <div id="customerModal" class="modal">
-    <div class="modal-content">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-semibold flex items-center">
-          <div class="nav-icon bg-red-600 text-white mr-2">
-            <i class="fas fa-users"></i>
-          </div>
-          Select Customer
-        </h2>
-        <button onclick="closeModal('customerModal')" class="text-gray-500 hover:text-gray-700">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <div class="mb-4">
-        <div class="relative">
-          <input type="text" id="customerSearch" placeholder="Search customers..."
-                 class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
-          <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-        </div>
-      </div>
-      <div class="h-96 overflow-y-auto scrollbar-thin mb-4">
-        {% for customer in customers %}
-        <div class="customer-item p-3 border-b border-gray-100 flex items-center cursor-pointer hover:bg-gray-50"
-             data-card-number="{{ customer.card_number }}"
-             data-name="{{ customer.cust_name }}"
-             data-surname="{{ customer.cust_surname }}"
-             data-percent="{{ customer.percent }}">
-          <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3">
-            <i class="fas fa-user text-red-800"></i>
-          </div>
-          <div>
-            <div class="font-medium">{{ customer.cust_surname }} {{ customer.cust_name }}</div>
-            <div class="text-sm text-gray-500">{{ customer.phone_number }} • {{ customer.card_number }}</div>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-      <div class="flex justify-end space-x-3">
-        <button onclick="closeModal('customerModal')" class="px-4 py-2 bg-gray-300 rounded-full hover:bg-gray-400">
-          Cancel
-        </button>
-        <button id="clearCustomer" class="px-4 py-2 bg-gray-600 text-white rounded-full hover:bg-gray-700">
-          Clear Customer
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Payment Modal -->
-  <div id="paymentModal" class="modal">
-    <div class="modal-content">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-semibold flex items-center">
-          <div class="nav-icon bg-red-600 text-white mr-2">
-            <i class="fas fa-credit-card"></i>
-          </div>
-          Process Payment
-        </h2>
-        <button onclick="closeModal('paymentModal')" class="text-gray-500 hover:text-gray-700">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <div class="mb-6">
-        <div class="bg-gray-50 p-4 rounded-lg mb-4">
-          <div class="flex justify-between text-lg font-bold mb-2">
-            <span>Total Amount:</span>
-            <span class="text-red-800">${{ total|floatformat:2 }}</span>
-          </div>
-          {% if current_customer %}
-          <div class="text-sm text-gray-600">Includes {{ current_customer.percent }}% discount for {{ current_customer.cust_surname }}</div>
-          {% endif %}
+  <!-- Receipt Modal -->
+  <div id="receiptModal" class="modal">
+    <div class="modal-content flex flex-col md:flex-row gap-6">
+      <!-- LEFT: Receipt Form -->
+      <form id="receiptForm" action="{% url 'create_receipt' %}" method="POST" class="w-full md:w-2/3 space-y-6" onsubmit="prepareProductsJson()">
+        {% csrf_token %}
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-semibold text-red-900 flex items-center">
+            <i class="fas fa-receipt mr-2"></i> Create Receipt
+          </h2>
         </div>
 
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
-          <select class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500">
-            <option>Cash</option>
-            <option>Credit Card</option>
-            <option>Debit Card</option>
-            <option>Mobile Payment</option>
+        <!-- Hidden Inputs -->
+        <input type="hidden" name="check_number" id="checkNumberInput">
+        <input type="hidden" name="print_date" id="printDateInput">
+        <input type="hidden" name="products_json" id="productsJsonInput">
+
+        <!-- Step 1: Customer Info -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-700 mb-2">Customer Info</h3>
+          <label for="cardSelect" class="block text-sm text-gray-600 mb-1">Customer Card</label>
+          <select name="card_number" id="cardSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+            <option value="">No customer card</option>
+            {% for card in cards %}
+              <option value="{{ card.card_number }}" {% if card.card_number|stringformat:"s" == selected_card %}selected{% endif %}>
+                #{{ card.card_number }} — {{ card.cust_surname }} {{ card.cust_name }}
+              </option>
+            {% endfor %}
           </select>
         </div>
 
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Amount Received</label>
-          <input type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
-                 placeholder="0.00" id="amountReceived">
+        <!-- Step 2: Add Product -->
+        <div class="border-t pt-4">
+          <h3 class="text-lg font-semibold text-gray-700 mb-2">Add Product</h3>
+
+          <div class="flex flex-wrap gap-3 items-center mt-4">
+            <select id="productSelect" class="w-full">
+              <option value="">Select a product</option>
+              {% for product in products %}
+                <option value='{"upc": "{{ product.UPC }}", "name": "{{ product.product_name|escapejs }}", "price": {{ product.price }}}'>
+                  {{ product.product_name }} (UPC: {{ product.UPC }}) - {{ product.price }} ₴
+                </option>
+              {% endfor %}
+            </select>
+
+            <input id="productQuantityInput" type="number" placeholder="Qty"
+                   value="1" min="1" class="w-20 px-3 py-2 border rounded-md">
+            <button type="button" onclick="addProductToPreview()"
+                    class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+              + Add
+            </button>
+          </div>
+          <p class="text-sm text-gray-500 mt-1">Select product from the list and specify quantity</p>
         </div>
 
-        <div class="bg-gray-50 p-3 rounded-lg hidden" id="changeContainer">
-          <div class="flex justify-between font-medium">
-            <span>Change Due:</span>
-            <span id="changeAmount">$0.00</span>
-          </div>
+        <!-- Actions -->
+        <div class="flex justify-end gap-3 border-t pt-4">
+          <button type="button" onclick="closeModal('receiptModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800">
+            Submit Receipt
+          </button>
         </div>
-      </div>
-      <div class="flex justify-end space-x-3">
-        <button onclick="closeModal('paymentModal')" class="px-4 py-2 bg-gray-300 rounded-full hover:bg-gray-400">
-          Cancel
-        </button>
-        <button id="confirmPayment" class="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700">
-          Confirm Payment
-        </button>
+      </form>
+
+      <!-- RIGHT: Products Preview -->
+      <div class="w-full md:w-1/3 bg-white p-4 rounded border border-gray-200 shadow-inner flex flex-col">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Products Preview</h3>
+        <ul id="productsPreview" class="space-y-2 overflow-y-auto max-h-64">
+          <li class="text-sm text-gray-500 italic">No products added yet</li>
+        </ul>
+        <div class="mt-auto pt-4 border-t text-right text-gray-800 font-medium">
+          Total: <span id="totalAmount">₴0.00</span>
+        </div>
       </div>
     </div>
   </div>
@@ -375,130 +227,187 @@
     </div>
   </div>
 
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script>
+    // Global variables
+    let products = [];
+    let currentReceiptId = null;
+
+    // Initialize Select2 when DOM is loaded
+    $(document).ready(function() {
+      $('#productSelect').select2({
+        placeholder: "Search for a product",
+        allowClear: true,
+        width: '100%',
+        templateResult: formatProduct,
+        templateSelection: formatProductSelection
+      });
+    });
+
+    // Format product display in dropdown
+    function formatProduct(product) {
+      if (!product.id) return product.text;
+
+      const productData = JSON.parse(product.id);
+      return $(`
+        <div>
+          <div class="font-medium">${productData.name}</div>
+          <div class="text-sm text-gray-600">
+            UPC: ${productData.upc} • Price: ${productData.price} ₴
+          </div>
+        </div>
+      `);
+    }
+
+    // Format selected product display
+    function formatProductSelection(product) {
+      if (!product.id) return product.text;
+
+      const productData = JSON.parse(product.id);
+      return $(`<span>${productData.name} (${productData.price} ₴)</span>`);
+    }
+
     // Modal functions
     function openModal(id) {
       document.getElementById(id).style.display = 'flex';
       document.body.style.overflow = 'hidden';
+
+      if (id === 'receiptModal') {
+        generateReceiptId();
+        setCurrentDate();
+        $('#productSelect').val(null).trigger('change');
+      }
     }
 
     function closeModal(id) {
       document.getElementById(id).style.display = 'none';
       document.body.style.overflow = 'auto';
-    }
 
-    window.onclick = function(event) {
-      if (event.target.className === 'modal') {
-        closeModal(event.target.id);
+      if (id === 'receiptModal') {
+        resetForm();
       }
     }
 
-    // Product search and filtering
-    document.getElementById('productSearch').addEventListener('input', function(e) {
-      const searchTerm = e.target.value.toLowerCase();
-      const productCards = document.querySelectorAll('.product-card');
+    // Generate random receipt ID
+    function generateReceiptId() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let result = '';
+      for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      currentReceiptId = result;
+      document.getElementById('checkNumberInput').value = result;
+    }
 
-      productCards.forEach(card => {
-        const productName = card.querySelector('h3').textContent.toLowerCase();
-        const productDesc = card.querySelector('p').textContent.toLowerCase();
-        const isVisible = productName.includes(searchTerm) || productDesc.includes(searchTerm);
-        card.style.display = isVisible ? 'block' : 'none';
-      });
-    });
+    // Set current date
+    function setCurrentDate() {
+      const now = new Date();
+      const formattedDate = now.toISOString().slice(0, 19).replace('T', ' ');
+      document.getElementById('printDateInput').value = formattedDate;
+    }
 
-    // Category filtering
-    document.querySelectorAll('.category-tab').forEach(tab => {
-      tab.addEventListener('click', function() {
-        document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
+    // Add product to preview
+    function addProductToPreview() {
+      const productSelect = $('#productSelect');
+      const selectedOption = productSelect.select2('data')[0];
 
-        const category = this.dataset.category;
-        const productCards = document.querySelectorAll('.product-card');
+      if (!selectedOption || !selectedOption.id) {
+        alert('Please select a product first.');
+        return;
+      }
 
-        productCards.forEach(card => {
-          if (category === 'all' || card.dataset.category === category) {
-            card.style.display = 'block';
-          } else {
-            card.style.display = 'none';
-          }
-        });
-      });
-    });
+      const quantityInput = document.getElementById('productQuantityInput');
+      const quantity = parseInt(quantityInput.value);
 
-    // Customer selection
-    document.querySelectorAll('.customer-item').forEach(item => {
-      item.addEventListener('click', function() {
-        const cardNumber = this.dataset.cardNumber;
-        const name = this.dataset.name;
-        const surname = this.dataset.surname;
-        const percent = this.dataset.percent;
+      if (isNaN(quantity) || quantity < 1) {
+        alert('Please enter valid quantity (>=1).');
+        return;
+      }
 
-        // Update customer display
-        const customerDisplay = `
-          <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3">
-            <i class="fas fa-user text-red-800"></i>
-          </div>
-          <div>
-            <span class="font-medium">${surname} ${name}</span>
-            <div class="text-xs text-gray-500">Card: ${cardNumber} (${percent}% discount)</div>
-          </div>
-        `;
-        document.getElementById('customerDisplay').innerHTML = customerDisplay;
+      const productData = JSON.parse(selectedOption.id);
+      const upc = productData.upc;
+      const name = productData.name;
+      const price = parseFloat(productData.price);
 
-        closeModal('customerModal');
-        updateTotals(); // Recalculate with discount
-      });
-    });
-
-    // Clear customer
-    document.getElementById('clearCustomer').addEventListener('click', function() {
-      const customerDisplay = `
-        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
-          <i class="fas fa-user text-gray-500"></i>
-        </div>
-        <span class="text-gray-500">No customer selected</span>
-      `;
-      document.getElementById('customerDisplay').innerHTML = customerDisplay;
-      closeModal('customerModal');
-      updateTotals(); // Recalculate without discount
-    });
-
-    // Payment processing
-    document.getElementById('processPayment').addEventListener('click', function() {
-      openModal('paymentModal');
-    });
-
-    // Calculate change
-    document.getElementById('amountReceived').addEventListener('input', function(e) {
-      const amountReceived = parseFloat(e.target.value) || 0;
-      const total = parseFloat({{ total }});
-      const changeContainer = document.getElementById('changeContainer');
-      const changeAmount = document.getElementById('changeAmount');
-
-      if (amountReceived >= total) {
-        const change = amountReceived - total;
-        changeAmount.textContent = '$' + change.toFixed(2);
-        changeContainer.classList.remove('hidden');
+      // Check if product already exists
+      const existingIndex = products.findIndex(p => p.upc === upc);
+      if (existingIndex >= 0) {
+        products[existingIndex].quantity += quantity;
       } else {
-        changeContainer.classList.add('hidden');
+        products.push({ upc, name, quantity, price });
       }
-    });
 
-    // Confirm payment
-    document.getElementById('confirmPayment').addEventListener('click', function() {
-      // Here you would typically submit the receipt to your backend
-      alert('Payment processed successfully! Receipt #{{ next_check_number }}');
-      closeModal('paymentModal');
-      // Reset the receipt interface
-      document.getElementById('receiptItems').innerHTML = '';
-      updateTotals();
-    });
+      updateProductsPreview();
+      resetProductFields();
+    }
 
-    // Function to update totals
-    function updateTotals() {
-      // This would be calculated from the current receipt items and customer discount
-      // In a real implementation, you would send this to your backend to calculate
-      console.log('Updating totals...');
+    // Remove product from preview
+    function removeProduct(index) {
+      products.splice(index, 1);
+      updateProductsPreview();
+    }
+
+    // Update products preview list
+    function updateProductsPreview() {
+      const previewList = document.getElementById('productsPreview');
+      const totalAmount = document.getElementById('totalAmount');
+
+      previewList.innerHTML = '';
+
+      let total = 0;
+      products.forEach((product, index) => {
+        const productTotal = product.quantity * product.price;
+        total += productTotal;
+
+        const li = document.createElement('li');
+        li.className = 'product-row';
+        li.innerHTML = `
+          <div class="flex-1">
+            <div class="font-medium">${product.name}</div>
+            <div class="text-sm text-gray-600">
+              ${product.quantity} × ${product.price.toFixed(2)} ₴ = ${productTotal.toFixed(2)} ₴
+            </div>
+          </div>
+          <button type="button" onclick="removeProduct(${index})"
+                  class="text-red-600 hover:text-red-800 ml-2">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        `;
+        previewList.appendChild(li);
+      });
+
+      totalAmount.textContent = `₴${total.toFixed(2)}`;
+
+      if (products.length === 0) {
+        previewList.innerHTML = '<li class="text-sm text-gray-500 italic">No products added yet</li>';
+        totalAmount.textContent = '₴0.00';
+      }
+    }
+
+    // Reset product input fields
+    function resetProductFields() {
+      $('#productSelect').val(null).trigger('change');
+      document.getElementById('productQuantityInput').value = '1';
+    }
+
+    // Reset entire form
+    function resetForm() {
+      products = [];
+      updateProductsPreview();
+      resetProductFields();
+      document.getElementById('cardSelect').selectedIndex = 0;
+    }
+
+    // Prepare products JSON before form submission
+    function prepareProductsJson() {
+      if (products.length === 0) {
+        alert('Please add at least one product to the receipt.');
+        event.preventDefault();
+        return false;
+      }
+      document.getElementById('productsJsonInput').value = JSON.stringify(products);
+      return true;
     }
   </script>
 </body>

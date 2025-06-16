@@ -50,7 +50,7 @@ def check_login(request):
             if result[1] == 'manager':
                 return redirect('manager_dashboard')
             else:  # For cashiers
-                return redirect('cashier_dashboard')
+                return redirect('create_receipt')
         else:
             messages.error(request, 'Invalid login or password or you are not authorized to access the system.')
 
@@ -70,7 +70,6 @@ def cashier_dashboard(request):
     if user_role not in ['cashier1', 'cashier2', 'cashier3', 'cashier4']:
         return redirect('login')
 
-    # Here you can fetch cashier-specific data from DB if needed
     cashier_id = request.session.get('user_id')
 
     return render(request, 'templates_cashier/cashier_dashboard.html', {
