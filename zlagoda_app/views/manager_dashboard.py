@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
-from django.db import connection, IntegrityError
+from django.db import connection, IntegrityError, transaction
 from django.core.paginator import Paginator
 from django.contrib import messages
+import random
 
 #===========EMPLOYEES===========
 def manage_employees(request):
@@ -174,6 +175,7 @@ def add_customer_card(request):
     """
     if request.method == "POST":
         data = request.POST
+        card_number = str(random.randint(10 ** 12, 10 ** 13 - 1))
         query = """
         INSERT INTO Customer_Card (card_number, cust_surname, cust_name, 
                                    cust_patronymic, phone_number, city, 
@@ -182,7 +184,7 @@ def add_customer_card(request):
         """
         with connection.cursor() as c:
             c.execute(query, [
-                data['card_number'], data['cust_surname'], data['cust_name'],
+                card_number, data['cust_surname'], data['cust_name'],
                 data.get('cust_patronymic'), data['phone_number'],
                 data.get('city'), data.get('street'), data.get('zip_code'), data['percent']
             ])
@@ -270,13 +272,20 @@ def add_category(request):
     """
     if request.method == "POST":
         data = request.POST
+
         query = """
         INSERT INTO Category (category_number, category_name)
         VALUES (%s, %s);
         """
         with connection.cursor() as c:
+            c.execute("""
+                        SELECT COALESCE(MAX(category_number), 0) + 1
+                        FROM Category
+            """)
+            category_number = c.fetchone()[0]
+
             c.execute(query, [
-                data['category_number'], data['category_name']
+                category_number, data['category_name']
             ])
         return redirect("manage_categories")
 
@@ -385,20 +394,26 @@ def add_product(request):
         try:
             with connection.cursor() as c:
                 c.execute("""
-                SELECT 1 
-                FROM category 
+                SELECT 1
+                FROM category
                 WHERE category_number = %s;
                 """, [data['category_number']])
                 if not c.fetchone():
                     messages.error(request, "Error: The selected category does not exist")
                     return redirect("manage_product_database")
 
+                c.execute("""
+                            SELECT COALESCE(MAX(id_product), 0) + 1
+                            FROM Product
+                """)
+                id_product = c.fetchone()[0]
+
                 query = """
                 INSERT INTO Product (id_product, category_number, product_name, characteristics)
                 VALUES (%s, %s, %s, %s);
                 """
                 c.execute(query, [
-                    data['id_product'],
+                    id_product,
                     data['category_number'],
                     data['product_name'],
                     data['characteristics']
@@ -741,12 +756,43 @@ def delete_check(request):
     if request.method == 'POST':
         check_number = request.POST['check_number']
 
-        query = """
-        DELETE FROM "Check"
-        WHERE check_number = %s;
-        """
-        with connection.cursor() as c:
-            c.execute(query, [check_number])
+    #     query = """
+    #     DELETE FROM "Check"
+    #     WHERE check_number = %s;
+    #     """
+    #     with connection.cursor() as c:
+    #         c.execute(query, [check_number])
+    #
+    # return redirect('manage_receipts')
+        with transaction.atomic():
+            with connection.cursor() as c:
+                # Отримати всі продукти з цього чека
+                c.execute("""
+                        SELECT UPC, product_number
+                        FROM Sale
+                        WHERE check_number = %s;
+                    """, [check_number])
+                products = c.fetchall()
+
+                # Повернути продукти на склад
+                for upc, product_number in products:
+                    c.execute("""
+                            UPDATE Store_Product
+                            SET products_number = products_number + %s
+                            WHERE UPC = %s;
+                        """, [product_number, upc])
+
+                # Видалити записи про продажі
+                c.execute("""
+                        DELETE FROM Sale
+                        WHERE check_number = %s;
+                    """, [check_number])
+
+                # Видалити сам чек
+                c.execute("""
+                        DELETE FROM "Check"
+                        WHERE check_number = %s;
+                    """, [check_number])
 
     return redirect('manage_receipts')
 

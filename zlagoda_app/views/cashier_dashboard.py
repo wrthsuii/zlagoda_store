@@ -2,9 +2,9 @@ from django.shortcuts import render, redirect
 from django.db import connection
 from django.core.paginator import Paginator
 from datetime import date, datetime
-import json
 from django.db import transaction
 from django.http import JsonResponse
+import json
 import random
 
 def create_receipt(request):
@@ -157,13 +157,13 @@ def create_receipt(request):
                             product['upc']
                         ])
 
-                        return JsonResponse({
-                            'status': 'success',
-                            'check_number': check_number,
-                            'sum_total': sum_total,
-                            'vat': vat,
-                            'print_date': print_date
-                        })
+                return JsonResponse({
+                    'status': 'success',
+                    'check_number': check_number,
+                    'sum_total': sum_total,
+                    'vat': vat,
+                    'print_date': print_date
+                })
 
         except Exception as e:
             return JsonResponse({
@@ -227,6 +227,8 @@ def cashier_add_customer_card(request):
     """
     if request.method == "POST":
         data = request.POST
+
+        card_number = str(random.randint(10**12, 10**13 - 1))
         query = """
         INSERT INTO Customer_Card (card_number, cust_surname, cust_name, 
                                    cust_patronymic, phone_number, city, 
@@ -235,7 +237,7 @@ def cashier_add_customer_card(request):
         """
         with connection.cursor() as c:
             c.execute(query, [
-                data['card_number'], data['cust_surname'], data['cust_name'],
+                card_number, data['cust_surname'], data['cust_name'],
                 data.get('cust_patronymic'), data['phone_number'],
                 data.get('city'), data.get('street'), data.get('zip_code'), data['percent']
             ])
