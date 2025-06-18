@@ -52,6 +52,7 @@ def manage_employees(request):
     context = {
         'role_filter': role_filter,
         'page_obj': page_obj,
+        'employees': employees
     }
     return render(request, "templates_manager/manage_employees.html", context)
 
@@ -165,6 +166,7 @@ def manage_customer_cards(request):
     context = {
         'percent_filter': percent_filter,
         'page_obj': page_obj,
+        'customer_cards': customer_cards
     }
     return render(request, 'templates_manager/manage_customer_cards.html', context)
 
@@ -262,6 +264,7 @@ def manage_categories(request):
 
     context = {
         'page_obj': page_obj,
+        'categories': categories
     }
     return render(request, 'templates_manager/manage_categories.html', context)
 
@@ -382,6 +385,7 @@ def manage_product_database(request):
         'category_filter': category_filter,
         'categories': categories,
         'page_obj': page_obj,
+        'products': products
     }
     return render(request, "templates_manager/manage_db_products.html", context)
 
@@ -510,6 +514,7 @@ def manage_store_products(request):
     context = {
         'prom_filter': prom_filter,
         'page_obj': page_obj,
+        'store_products': store_products
     }
     return render(request, "templates_manager/manage_store_products.html", context)
 
@@ -745,7 +750,8 @@ def manage_receipts(request):
         'stats': stats,
         'request': request,
         'selected_product_name': selected_product_name,
-        'selected_product_id': product_filter
+        'selected_product_id': product_filter,
+        'receipts': receipts
     }
     return render(request, "templates_manager/manage_receipts.html", context)
 
@@ -756,14 +762,6 @@ def delete_check(request):
     if request.method == 'POST':
         check_number = request.POST['check_number']
 
-    #     query = """
-    #     DELETE FROM "Check"
-    #     WHERE check_number = %s;
-    #     """
-    #     with connection.cursor() as c:
-    #         c.execute(query, [check_number])
-    #
-    # return redirect('manage_receipts')
         with transaction.atomic():
             with connection.cursor() as c:
                 # Отримати всі продукти з цього чека

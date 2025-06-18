@@ -38,6 +38,68 @@
     .action-btn:hover {
       transform: scale(1.05);
     }
+     @media print {
+      body, html {
+        background: white !important;
+        color: black !important;
+        font-family: "Times New Roman", serif;
+        font-size: 12pt;
+      }
+      body * {
+        visibility: hidden;
+      }
+      #pdf-content, #pdf-content * {
+        visibility: visible;
+      }
+      #pdf-content {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        background: white;
+        color: black;
+      }
+    }
+    #pdf-content {
+      display: none;
+    }
+    .pdf-title {
+    font-size: 18pt;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .pdf-subtitle {
+    font-size: 14pt;
+    text-align: center;
+    margin-bottom: 5px;
+  }
+
+  .pdf-date {
+    font-size: 10pt;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .pdf-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .pdf-table th,
+  .pdf-table td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+  }
+
+  .pdf-table th {
+    background-color: #f0f0f0 !important;
+    font-weight: bold;
+  }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen">
@@ -54,7 +116,7 @@
         <li><a href="/categories" class="hover:underline flex items-center"><i class="fas fa-tags mr-1"></i>Categories</a></li>
         <li><a href="/employees" class="hover:underline flex items-center"><i class="fas fa-users mr-1"></i>Employees</a></li>
         <li><a href="/customer_cards" class="hover:underline flex items-center"><i class="fas fa-id-card mr-1"></i>Customers</a></li>
-        <li><a href="/reports" class="font-extrabold text-white flex items-center"><i class="fas fa-chart-pie mr-1"></i>Reports</a></li>
+        <li><a href="/receipts" class="font-extrabold text-white flex items-center"><i class="fas fa-receipt mr-1"></i>Receipts</a></li>
         <li><button onclick="openModal('logoutModal')" class="text-red-300 hover:text-red-100 flex items-center">
           <i class="fas fa-sign-out-alt mr-1"></i>Log Out
         </button></li>
@@ -110,6 +172,9 @@
         </div>
 
         <div class="md:col-span-4 flex justify-end space-x-3">
+          <button onclick="printReport()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center">
+            <i class="fas fa-print mr-2"></i>Print
+          </button>
           <button type="submit" class="px-4 py-2 bg-yellow-700 text-white rounded-md hover:bg-yellow-800 flex items-center">
             <i class="fas fa-search mr-2"></i>Apply Filters
           </button>
@@ -140,6 +205,34 @@
           </h3>
           <p class="text-2xl font-bold">{{ stats.product_quantity|default:"-" }}</p>
         </div>
+    </div>
+
+    <div id="pdf-content">
+      <div class="pdf-header">
+        <div class="pdf-title">ZLAGODA STORE</div>
+        <div class="pdf-subtitle">Receipt Report</div>
+        <div class="pdf-date" id="pdf-date"></div>
+      </div>
+      <table class="pdf-table">
+        <thead>
+          <tr>
+            <th>Receipt No</th>
+            <th>Cashier Surname</th>
+            <th>Print Date</th>
+            <th>Total Sum</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in receipts %}
+          <tr>
+            <td>{{ r.check_number }}</td>
+            <td>{{ r.empl_surname }}</td>
+            <td>{{ r.print_date }}</td>
+            <td>{{ r.sum_total }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
     <!-- Receipts Table -->
@@ -275,6 +368,14 @@
       document.getElementById('receiptToDelete').textContent = checkNumber;
       document.getElementById('delete_check_number').value = checkNumber;
       openModal('deleteCheckModal');
+    }
+
+    function printReport() {
+      const pdfContent = document.getElementById('pdf-content');
+      document.getElementById('pdf-date').textContent = new Date().toLocaleString();
+      pdfContent.style.display = 'block';
+      window.print();
+      pdfContent.style.display = 'none';
     }
 
     window.onclick = function(event) {

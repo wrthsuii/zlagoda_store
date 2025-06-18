@@ -7,6 +7,8 @@
   <link rel="icon" href="/img/manager_icon.png" type="image/x-icon">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     .modal {
       position: fixed;
@@ -36,6 +38,69 @@
     .table-container {
       overflow-x: auto;
     }
+    /* PDF-specific styles */
+    @media print {
+      body, html {
+        background: white !important;
+        color: black !important;
+        font-family: "Times New Roman", serif;
+        font-size: 12pt;
+      }
+      body * {
+        visibility: hidden;
+      }
+      #pdf-content, #pdf-content * {
+        visibility: visible;
+      }
+      #pdf-content {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        background: white;
+        color: black;
+      }
+    }
+    #pdf-content {
+      display: none;
+    }
+    .pdf-title {
+    font-size: 18pt;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .pdf-subtitle {
+    font-size: 14pt;
+    text-align: center;
+    margin-bottom: 5px;
+  }
+
+  .pdf-date {
+    font-size: 10pt;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .pdf-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .pdf-table th,
+  .pdf-table td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+  }
+
+  .pdf-table th {
+    background-color: #f0f0f0 !important;
+    font-weight: bold;
+  }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen">
@@ -44,7 +109,7 @@
     <div class="max-w-7xl mx-auto flex justify-between items-center">
       <div class="text-2xl font-semibold flex items-center">
         <a href="/manager" class="flex items-center text-white-600 hover:underline">
-            <i class="fas fa-chart-line mr-2"></i>Manager Space
+          <i class="fas fa-chart-line mr-2"></i>Manager Space
         </a>
       </div>
       <ul class="flex space-x-6 text-lg">
@@ -52,7 +117,7 @@
         <li><a href="/categories" class="font-extrabold text-white flex items-center"><i class="fas fa-tags mr-1"></i>Categories</a></li>
         <li><a href="/employees" class="hover:underline flex items-center"><i class="fas fa-users mr-1"></i>Employees</a></li>
         <li><a href="/customer_cards" class="hover:underline flex items-center"><i class="fas fa-id-card mr-1"></i>Customers</a></li>
-        <li><a href="/reports" class="hover:underline flex items-center"><i class="fas fa-chart-pie mr-1"></i>Reports</a></li>
+        <li><a href="/receipts" class="hover:underline flex items-center"><i class="fas fa-receipt mr-1"></i>Receipts</a></li>
         <li><button onclick="openModal('logoutModal')" class="text-red-300 hover:text-red-100 flex items-center">
           <i class="fas fa-sign-out-alt mr-1"></i>Log Out
         </button></li>
@@ -62,19 +127,48 @@
 
   <!-- Main Content -->
   <div class="max-w-7xl mx-auto py-8 px-4">
-    <h1 class="text-3xl font-bold text-yellow-900 mb-6">Category Management</h1>
+      <h1 class="text-3xl font-bold text-yellow-900">Category Management</h1>
 
-    <!-- Filters and Actions -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <div class="flex justify-end">
+      <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div class="flex space-x-4 justify-end">
+            <button onclick="printReport()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center">
+              <i class="fas fa-print mr-2"></i>Print
+            </button>
             <button onclick="openModal('addCategoryModal')" class="px-4 py-2 bg-yellow-700 text-white rounded-md hover:bg-yellow-800 flex items-center">
-            <i class="fas fa-plus mr-2"></i>Add New Category
+              <i class="fas fa-plus mr-2"></i>Add New
             </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Hidden PDF Content -->
+    <div id="pdf-content">
+      <div class="pdf-header">
+        <div class="pdf-title">ZLAGODA STORE</div>
+        <div class="pdf-subtitle">Category Report</div>
+        <div class="pdf-date" id="pdf-date"></div>
+      </div>
+      <table class="pdf-table">
+        <thead>
+          <tr>
+            <th>Category Number</th>
+            <th>Category Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in categories %}
+          <tr>
+            <td>{{ c.category_number }}</td>
+            <td>{{ c.category_name }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
     <!-- Category Table -->
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
       <div class="table-container">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
@@ -107,33 +201,37 @@
     </div>
 
     <!-- Pagination -->
-    <div class="mt-6 flex justify-center">
-      <nav class="inline-flex">
+    <div class="flex justify-center">
+      <nav class="inline-flex rounded-md shadow">
         {% if page_obj.has_previous %}
-          <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 border rounded-l hover:bg-gray-100">
-            <i class="fas fa-chevron-left mr-1"></i>Previous
+          <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <i class="fas fa-chevron-left mr-1"></i> Previous
           </a>
         {% else %}
-          <span class="px-4 py-2 border rounded-l text-gray-400 cursor-not-allowed">
-            <i class="fas fa-chevron-left mr-1"></i>Previous
+          <span class="px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-400 cursor-not-allowed">
+            <i class="fas fa-chevron-left mr-1"></i> Previous
           </span>
         {% endif %}
 
         {% for num in page_obj.paginator.page_range %}
           {% if page_obj.number == num %}
-            <span class="px-4 py-2 border-t border-b border-r bg-gray-300">{{ num }}</span>
+            <span class="px-4 py-2 border-t border-b border-r border-gray-300 bg-gray-200 text-sm font-medium text-gray-700">
+              {{ num }}
+            </span>
           {% else %}
-            <a href="?page={{ num }}" class="px-4 py-2 border hover:bg-gray-100">{{ num }}</a>
+            <a href="?page={{ num }}" class="px-4 py-2 border-t border-b border-r border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+              {{ num }}
+            </a>
           {% endif %}
         {% endfor %}
 
         {% if page_obj.has_next %}
-          <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 border rounded-r hover:bg-gray-100">
-            Next<i class="fas fa-chevron-right ml-1"></i>
+          <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+            Next <i class="fas fa-chevron-right ml-1"></i>
           </a>
         {% else %}
-          <span class="px-4 py-2 border rounded-r text-gray-400 cursor-not-allowed">
-            Next<i class="fas fa-chevron-right ml-1"></i>
+          <span class="px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-400 cursor-not-allowed">
+            Next <i class="fas fa-chevron-right ml-1"></i>
           </span>
         {% endif %}
       </nav>
@@ -258,8 +356,7 @@
       </div>
     </div>
   </div>
-
-  <script>
+ <script>
     // Modal functions
     function openModal(id) {
       document.getElementById(id).style.display = 'flex';
@@ -281,6 +378,14 @@
       document.getElementById('categoryToDelete').textContent = categoryNumber;
       document.getElementById('delete_category_number').value = categoryNumber;
       openModal('deleteCategoryModal');
+    }
+
+    function printReport() {
+      const pdfContent = document.getElementById('pdf-content');
+      document.getElementById('pdf-date').textContent = new Date().toLocaleString();
+      pdfContent.style.display = 'block';
+      window.print();
+      pdfContent.style.display = 'none';
     }
 
     window.onclick = function(event) {

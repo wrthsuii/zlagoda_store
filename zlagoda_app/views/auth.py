@@ -8,7 +8,6 @@ from decouple import config
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-
 def check_login(request):
     if request.method == 'POST':
         login = request.POST.get('login')
@@ -29,7 +28,6 @@ def check_login(request):
         )
         cur = conn.cursor()
 
-        # SQL query to check user credentials and get more info
         query = """
                 SELECT id_employee, role_login, empl_name, empl_surname
                 FROM Employee
@@ -42,14 +40,13 @@ def check_login(request):
         conn.close()
 
         if result:
-            # Store user info in session
             request.session['user_id'] = result[0]
             request.session['user_role'] = result[1]
             request.session['user_name'] = f"{result[2]} {result[3]}"
 
             if result[1] == 'manager':
                 return redirect('manager_dashboard')
-            else:  # For cashiers
+            else:
                 return redirect('create_receipt')
         else:
             messages.error(request, 'Invalid login or password or you are not authorized to access the system.')

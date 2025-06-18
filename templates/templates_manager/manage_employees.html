@@ -38,12 +38,68 @@
     .table-container {
       overflow-x: auto;
     }
-    .stats-card {
-      background-color: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      padding: 1.5rem;
+    @media print {
+      body, html {
+        background: white !important;
+        color: black !important;
+        font-family: "Times New Roman", serif;
+        font-size: 12pt;
+      }
+      body * {
+        visibility: hidden;
+      }
+      #pdf-content, #pdf-content * {
+        visibility: visible;
+      }
+      #pdf-content {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        background: white;
+        color: black;
+      }
     }
+    #pdf-content {
+      display: none;
+    }
+    .pdf-title {
+    font-size: 18pt;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .pdf-subtitle {
+    font-size: 14pt;
+    text-align: center;
+    margin-bottom: 5px;
+  }
+
+  .pdf-date {
+    font-size: 10pt;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .pdf-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .pdf-table th,
+  .pdf-table td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+  }
+
+  .pdf-table th {
+    background-color: #f0f0f0 !important;
+    font-weight: bold;
+  }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen">
@@ -60,7 +116,7 @@
         <li><a href="/categories" class="hover:underline flex items-center"><i class="fas fa-tags mr-1"></i>Categories</a></li>
         <li><a href="/employees" class="font-extrabold text-white flex items-center"><i class="fas fa-users mr-1"></i>Employees</a></li>
         <li><a href="/customer_cards" class="hover:underline flex items-center"><i class="fas fa-id-card mr-1"></i>Customers</a></li>
-        <li><a href="/reports" class="hover:underline flex items-center"><i class="fas fa-chart-pie mr-1"></i>Reports</a></li>
+        <li><a href="/receipts" class="hover:underline flex items-center"><i class="fas fa-receipt mr-1"></i>Receipts</a></li>
         <li><button onclick="openModal('logoutModal')" class="text-red-300 hover:text-red-100 flex items-center">
           <i class="fas fa-sign-out-alt mr-1"></i>Log Out
         </button></li>
@@ -91,11 +147,60 @@
           </div>
         </form>
 
-        <button onclick="openModal('addEmployeeModal')"
-                class="mt-4 md:mt-0 px-4 py-2 bg-yellow-700 text-white rounded-md hover:bg-yellow-800 flex items-center">
-          <i class="fas fa-plus mr-2"></i>Add New Employee
-        </button>
+          <div class="flex space-x-4 order-2 md:order-1 mt-4 md:mt-0">
+              <button onclick="printReport()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center">
+                <i class="fas fa-print mr-2"></i>Print
+              </button>
+              <button onclick="openModal('addEmployeeModal')"
+                      class="px-4 py-2 bg-yellow-700 text-white rounded-md hover:bg-yellow-800 flex items-center">
+                <i class="fas fa-plus mr-2"></i>Add New
+              </button>
+          </div>
       </div>
+    </div>
+
+    <div id="pdf-content">
+      <div class="pdf-header">
+        <div class="pdf-title">ZLAGODA STORE</div>
+        <div class="pdf-subtitle">Employee Report</div>
+        <div class="pdf-date" id="pdf-date"></div>
+      </div>
+      <table class="pdf-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Surname</th>
+            <th>Name</th>
+            <th>Patronymic</th>
+            <th>Role</th>
+            <th>Salary</th>
+            <th>Birth Date</th>
+            <th>Hire Date</th>
+            <th>Phone Number</th>
+            <th>City</th>
+            <th>Street</th>
+            <th>ZIP Code</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in employees %}
+          <tr>
+            <td>{{ e.id_employee }}</td>
+            <td>{{ e.empl_surname }}</td>
+            <td>{{ e.empl_name}}</td>
+            <td>{{ e.empl_patronymic }}</td>
+            <td>{{ e.empl_role }}</td>
+            <td>{{ e.salary }}</td>
+            <td>{{ e.date_of_birth }}</td>
+            <td>{{ e.date_of_start }}</td>
+            <td>{{ e.phone_number }}</td>
+            <td>{{ e.city }}</td>
+            <td>{{ e.street }}</td>
+            <td>{{ e.zip_code }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
     <!-- Employees Table -->
@@ -443,6 +548,14 @@
       document.getElementById('employeeToDelete').textContent = id;
       document.getElementById('delete_id').value = id;
       openModal('deleteEmployeeModal');
+    }
+
+    function printReport() {
+      const pdfContent = document.getElementById('pdf-content');
+      document.getElementById('pdf-date').textContent = new Date().toLocaleString();
+      pdfContent.style.display = 'block';
+      window.print();
+      pdfContent.style.display = 'none';
     }
 
     window.onclick = function(event) {
