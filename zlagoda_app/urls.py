@@ -33,9 +33,12 @@ urlpatterns = [
     path("edit_store_product/", m_store_products.edit_store_product, name="edit_store_product"),
     path("delete_store_product/", m_store_products.delete_store_product, name="delete_store_product"),
     path("receipts/", m_receipts.manage_receipts, name="manage_receipts"),
-    path("advanced_analytics/", m_receipts.advanced_analytics, name="advanced_analytics"),
     path("delete_check/", m_receipts.delete_check, name="delete_check"),
     path("receipts/<str:check_number>/", m_receipts.receipt_details, name="receipt_details"),
+    #for report ---------------------------------------------------
+    path("advanced_analytics/", m_receipts.advanced_analytics, name="advanced_analytics"),
+    path("query-1/", m_receipts.query_1, name="query_1"),
+    path("query-2/", m_receipts.query_2, name="query_2"),
     #--------------------------------------------------------------
     path("cashier_customer_cards/", c_customer_cards.cashier_customer_cards, name="cashier_customer_cards"),
     path("cashier_add_customer_card/", c_customer_cards.cashier_add_customer_card, name="cashier_add_customer_card"),

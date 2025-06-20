@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.db import connection, transaction
 from django.core.paginator import Paginator
+from datetime import datetime
 
 def manage_receipts(request):
     """
@@ -175,9 +176,6 @@ def manage_receipts(request):
     }
     return render(request, "templates_manager/manage_receipts.html", context)
 
-def advanced_analytics(request):
-    pass
-
 def delete_check(request):
     """
     3. Видаляти дані про чеки;
@@ -277,3 +275,81 @@ def receipt_details(request, check_number):
     }
 
     return render(request, 'templates_manager/receipt_details.html', context)
+
+def advanced_analytics(request):
+    return render(request, "templates_manager/dashb_adv_analytics.html")
+
+def query_1(request):
+    selected_date = request.GET.get('month')
+    if selected_date:
+        try:
+            parsed_date = datetime.strptime(selected_date, '%Y-%m')
+        except ValueError:
+            parsed_date = datetime.today()
+    else:
+        parsed_date = datetime.today()
+    current_month = parsed_date.strftime('%Y-%m')
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+                SELECT P.product_name AS product_name, COUNT(P.product_name) AS products_count, C.category_name AS category_name
+                FROM Product P
+                INNER JOIN Store_Product SP ON P.id_product = SP.id_product
+                INNER JOIN Sale S ON SP.UPC = S.UPC
+                INNER JOIN "Check" Ch ON S.check_number = Ch.check_number
+                INNER JOIN Category C ON P.category_number = C.category_number
+                WHERE TO_CHAR(Ch.print_date, 'YYYY-MM') = %s
+                AND Ch.card_number IS NULL
+                GROUP BY P.product_name, C.category_name
+                ORDER BY products_count DESC
+                LIMIT 5;
+            """, [current_month])
+        top_products = [
+            {'product_name': row[0], 'products_count': row[1], 'category_name': row[2]}
+            for row in cursor.fetchall()
+        ]
+
+    context = {
+        'current_month': current_month,
+        'top_products': top_products,
+    }
+    return render(request, 'templates_manager/query_1.html', context)
+
+
+def query_2(request):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+                SELECT P.product_name, C.category_name
+                FROM Product P 
+                INNER JOIN Store_Product SP
+                ON P.id_product = SP.id_product
+                INNER JOIN Category C
+                ON P.category_number = C.category_number
+                WHERE SP.promotional_product IS TRUE
+        """)
+        prom_products = [{'product_name': row[0], 'category_name': row[1]} for row in cursor.fetchall()]
+
+        cursor.execute("""
+                SELECT e.id_employee, e.empl_surname, e.empl_name, e.empl_patronymic
+                FROM Employee e
+                WHERE NOT EXISTS (
+                                SELECT 1
+                                FROM Store_Product sp
+                                WHERE sp.promotional_product = TRUE
+                                AND NOT EXISTS (
+                                                SELECT 1
+                                                FROM "Check" c
+                                                INNER JOIN Sale s 
+                                                ON c.check_number = s.check_number
+                                                WHERE c.id_employee = e.id_employee
+                                                AND s.UPC = sp.UPC
+                                                )
+                                )
+        """)
+        qualifying_cashiers = [{'id_employee': row[0], 'empl_surname': row[1], 'empl_name': row[2], 'empl_patronymic': row[3]}
+                    for row in cursor.fetchall()]
+    context = {
+        'prom_products': prom_products,
+        'qualifying_cashiers': qualifying_cashiers
+    }
+    return render(request, "templates_manager/query_2.html", context)
