@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect
-from django.db import connection, IntegrityError
+from django.db import connection
 from django.core.paginator import Paginator
-from django.contrib import messages
 
 def manage_products(request):
     return render(request, 'templates_manager/manage_products.html')
@@ -24,7 +23,7 @@ def manage_product_database(request):
         category_rows = c.fetchall()
     categories = [row[0] for row in category_rows]
 
-    query1 = """
+    query = """
         SELECT P.id_product, C.category_name, P.category_number, 
                P.product_name, P.characteristics
         FROM Product P
@@ -33,12 +32,12 @@ def manage_product_database(request):
     """
     params = []
     if category_filter:
-        query1 += " WHERE C.category_name = %s"
+        query += " WHERE C.category_name = %s"
         params.append(category_filter)
-    query1 += " ORDER BY P.product_name"
+    query += " ORDER BY P.product_name"
 
     with connection.cursor() as c:
-        c.execute(query1, params)
+        c.execute(query, params)
         rows = c.fetchall()
 
     products = [
@@ -69,17 +68,7 @@ def add_product(request):
     """
     if request.method == "POST":
         data = request.POST
-        try:
-            with connection.cursor() as c:
-                c.execute("""
-                SELECT 1
-                FROM category
-                WHERE category_number = %s;
-                """, [data['category_number']])
-                if not c.fetchone():
-                    messages.error(request, "Error: The selected category does not exist")
-                    return redirect("manage_product_database")
-
+        with connection.cursor() as c:
                 c.execute("""
                             SELECT COALESCE(MAX(id_product), 0) + 1
                             FROM Product
@@ -96,12 +85,7 @@ def add_product(request):
                     data['product_name'],
                     data['characteristics']
                 ])
-            return redirect("manage_product_database")
-
-        except IntegrityError as e:
-            if 'foreign key' in str(e).lower():
-                messages.error(request, "Error: The selected category does not exist")
-            return redirect("manage_product_database")
+        return redirect("manage_product_database")
 
 def edit_product(request):
     """

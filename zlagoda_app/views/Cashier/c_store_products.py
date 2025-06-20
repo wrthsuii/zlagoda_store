@@ -20,7 +20,7 @@ def cashier_store_products(request):
            SP.products_number, SP.promotional_product
     FROM Store_Product SP
     JOIN Product P
-      ON SP.id_product = P.id_product
+    ON SP.id_product = P.id_product
     """
     conditions = []
     params = []

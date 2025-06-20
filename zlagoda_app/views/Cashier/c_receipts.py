@@ -31,18 +31,18 @@ def create_receipt(request):
                 c.execute("""
                             SELECT SP.UPC, P.product_name, SP.selling_price
                             FROM Store_Product SP
-                            JOIN Product P ON SP.id_product = P.id_product
+                            JOIN Product P 
+                            ON SP.id_product = P.id_product
                             WHERE P.product_name ILIKE %s
                             ORDER BY P.product_name
-                            LIMIT 10
                         """, ['%' + product_search + '%'])
             else:
                 c.execute("""
                             SELECT SP.UPC, P.product_name, SP.selling_price
                             FROM Store_Product SP
-                            JOIN Product P ON SP.id_product = P.id_product
+                            JOIN Product P 
+                            ON SP.id_product = P.id_product
                             ORDER BY P.product_name
-                            LIMIT 50
                         """)
 
             products = [
@@ -98,7 +98,8 @@ def create_receipt(request):
                 if card_number:
                     with connection.cursor() as c:
                         c.execute("""
-                            SELECT percent FROM Customer_Card 
+                            SELECT percent 
+                            FROM Customer_Card 
                             WHERE card_number = %s
                         """, [card_number])
                         result = c.fetchone()
@@ -195,10 +196,11 @@ def cashier_receipts(request):
     query = """
     SELECT C.check_number, C.print_date, C.sum_total
     FROM "Check" C
-    JOIN Employee E ON C.id_employee = E.id_employee
+    JOIN Employee E 
+    ON C.id_employee = E.id_employee
     WHERE C.id_employee = %s
-      AND C.print_date::date BETWEEN %s AND %s
-    ORDER BY C.print_date DESC, C.check_number DESC
+    AND C.print_date::date BETWEEN %s AND %s
+    ORDER BY C.print_date DESC
     """
     params = [cashier_id, date_from, date_to]
 

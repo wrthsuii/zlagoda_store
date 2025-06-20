@@ -16,7 +16,6 @@ def cashier_db_products(request):
     product_name_filter = request.GET.get('product_name', '').strip()
     page_number = request.GET.get('page', 1)
 
-    # Отримати список категорій
     with connection.cursor() as c:
         c.execute("""
             SELECT category_name 

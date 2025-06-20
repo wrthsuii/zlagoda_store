@@ -137,8 +137,10 @@ def manage_receipts(request):
     if product_filter:
         query += """
             AND EXISTS (
-                SELECT 1 FROM Sale S
-                JOIN Store_Product SP ON S.UPC = SP.UPC
+                SELECT 1 
+                FROM Sale S
+                JOIN Store_Product SP 
+                ON S.UPC = SP.UPC
                 WHERE S.check_number = C.check_number
                 AND SP.id_product = %s
             )

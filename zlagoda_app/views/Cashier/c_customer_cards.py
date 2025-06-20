@@ -18,7 +18,7 @@ def cashier_customer_cards(request):
     params = []
 
     if surname_filter:
-        query += " WHERE LOWER(cust_surname) LIKE LOWER(%s)"
+        query += " WHERE cust_surname ILIKE %s"
         params.append(f"%{surname_filter}%")
 
     query += " ORDER BY cust_surname"
