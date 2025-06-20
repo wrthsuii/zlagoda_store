@@ -92,9 +92,9 @@
           {% if top_products %}
             {% for p in top_products %}
             <tr class="border-b border-gray-200 hover:bg-blue-50">
-              <td class="py-4 px-6 text-blue-900 font-semibold">{{ p.product_name }}</td>
+              <td class="py-4 px-6 text-blue-900 font-semibold text-center">{{ p.product_name }}</td>
               <td class="py-4 px-6 text-center">{{ p.products_count }}</td>
-              <td class="py-4 px-6">{{ p.category_name }}</td>
+              <td class="py-4 px-6 text-center">{{ p.category_name }}</td>
             </tr>
             {% endfor %}
           {% else %}

@@ -94,6 +94,7 @@
                 <th class="py-3 px-6 text-left">Product</th>
                 <th class="py-3 px-6 text-left">Status</th>
                 <th class="py-3 px-6 text-left">Category</th>
+                <th class="py-3 px-6 text-left">Stock</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -107,6 +108,7 @@
                     </span>
                   </td>
                   <td class="py-4 px-6 text-left">{{ p.category_name }}</td>
+                  <td class="py-4 px-6 text-center">{{ p.products_number }}</td>
                 </tr>
                 {% endfor %}
               {% else %}

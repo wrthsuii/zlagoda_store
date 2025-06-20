@@ -295,16 +295,22 @@ def query_1(request):
 
     with connection.cursor() as cursor:
         cursor.execute("""
-                SELECT P.product_name AS product_name, COUNT(P.product_name) AS products_count, C.category_name AS category_name
+                SELECT P.product_name AS product_name, 
+                       COUNT(P.id_product) AS products_count, 
+                       C.category_name AS category_name
                 FROM Product P
-                INNER JOIN Store_Product SP ON P.id_product = SP.id_product
-                INNER JOIN Sale S ON SP.UPC = S.UPC
-                INNER JOIN "Check" Ch ON S.check_number = Ch.check_number
-                INNER JOIN Category C ON P.category_number = C.category_number
+                INNER JOIN Store_Product SP 
+                ON P.id_product = SP.id_product
+                INNER JOIN Sale S 
+                ON SP.UPC = S.UPC
+                INNER JOIN "Check" Ch 
+                ON S.check_number = Ch.check_number
+                INNER JOIN Category C 
+                ON P.category_number = C.category_number
                 WHERE TO_CHAR(Ch.print_date, 'YYYY-MM') = %s
                 AND Ch.card_number IS NULL
                 GROUP BY P.product_name, C.category_name
-                ORDER BY products_count DESC
+                ORDER BY COUNT(P.id_product) DESC
                 LIMIT 5;
             """, [current_month])
         top_products = [
@@ -325,30 +331,33 @@ def query_2(request):
     """
     with connection.cursor() as cursor:
         cursor.execute("""
-                SELECT P.product_name, C.category_name
+                SELECT P.product_name, C.category_name, SP.products_number
                 FROM Product P 
                 INNER JOIN Store_Product SP
                 ON P.id_product = SP.id_product
                 INNER JOIN Category C
                 ON P.category_number = C.category_number
                 WHERE SP.promotional_product IS TRUE
+                ORDER BY SP.products_number DESC
         """)
-        prom_products = [{'product_name': row[0], 'category_name': row[1]} for row in cursor.fetchall()]
+        prom_products = [{'product_name': row[0], 'category_name': row[1], 'products_number': row[2]}
+                         for row in cursor.fetchall()]
 
         cursor.execute("""
-                SELECT e.id_employee, e.empl_surname, e.empl_name, e.empl_patronymic
-                FROM Employee e
-                WHERE NOT EXISTS (
+                SELECT E.id_employee, E.empl_surname, E.empl_name, E.empl_patronymic
+                FROM Employee E
+                WHERE E.empl_role = 'cashier'
+                AND NOT EXISTS (
                                 SELECT 1
-                                FROM Store_Product sp
-                                WHERE sp.promotional_product = TRUE
+                                FROM Store_Product SP
+                                WHERE SP.promotional_product IS TRUE
                                 AND NOT EXISTS (
                                                 SELECT 1
-                                                FROM "Check" c
-                                                INNER JOIN Sale s 
-                                                ON c.check_number = s.check_number
-                                                WHERE c.id_employee = e.id_employee
-                                                AND s.UPC = sp.UPC
+                                                FROM "Check" C
+                                                INNER JOIN Sale S 
+                                                ON C.check_number = S.check_number
+                                                WHERE C.id_employee = E.id_employee
+                                                AND S.UPC = SP.UPC
                                                 )
                                 )
         """)
