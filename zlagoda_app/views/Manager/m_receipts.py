@@ -280,6 +280,9 @@ def advanced_analytics(request):
     return render(request, "templates_manager/dashb_adv_analytics.html")
 
 def query_1(request):
+    """
+    *22. Визначити топ-5 товарів місяця, що продаються поміж клієнтів без картки лояльності.
+    """
     selected_date = request.GET.get('month')
     if selected_date:
         try:
@@ -317,6 +320,9 @@ def query_1(request):
 
 
 def query_2(request):
+    """
+    *23. Визначити касирів, які продали усі продукти, які в базі є поточними акційними товарами.
+    """
     with connection.cursor() as cursor:
         cursor.execute("""
                 SELECT P.product_name, C.category_name
