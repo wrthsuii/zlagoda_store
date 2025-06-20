@@ -135,9 +135,9 @@
             <select name="percent" onchange="this.form.submit()"
                     class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
               <option value="" {% if percent_filter == '' %}selected{% endif %}>All discounts</option>
-              <option value=5 {% if percent_filter == 5 %}selected{% endif %}>5%</option>
-              <option value=10 {% if percent_filter == 10 %}selected{% endif %}>10%</option>
-              <option value=15 {% if percent_filter == 15 %}selected{% endif %}>15%</option>
+              <option value="5" {% if percent_filter == "5" %}selected{% endif %}>5%</option>
+              <option value="10" {% if percent_filter == "10" %}selected{% endif %}>10%</option>
+              <option value="15" {% if percent_filter == "15" %}selected{% endif %}>15%</option>
             </select>
           </div>
         </form>
