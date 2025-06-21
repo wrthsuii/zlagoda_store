@@ -10,6 +10,8 @@ def manage_store_products(request):
     16. Отримати інформацію про усі не акційні товари, відсортовані за кількістю
     одиниць товару/ за назвою;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     page_number = request.GET.get('page', 1)
     prom_filter = request.GET.get('promotional_product', '')
 
@@ -59,6 +61,8 @@ def add_store_product(request):
     """
     1. Додавати нові дані про товари в магазині;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == "POST":
         data = request.POST
         query = """
@@ -100,6 +104,8 @@ def delete_store_product(request):
     """
     3. Видаляти дані про товари в магазині;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == 'POST':
         UPC = request.POST['UPC']
 

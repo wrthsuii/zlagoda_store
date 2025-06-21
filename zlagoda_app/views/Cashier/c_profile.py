@@ -5,6 +5,9 @@ def cashier_profile(request):
     """
     15. Можливість отримати усю інформацію про себе.
     """
+    user_role = request.session.get('user_role')
+    if user_role not in ['cashier1', 'cashier2', 'cashier3', 'cashier4']:
+        return redirect('login')
     cashier_id = request.session.get('user_id')
     query = """
        SELECT empl_surname, empl_name, empl_patronymic,

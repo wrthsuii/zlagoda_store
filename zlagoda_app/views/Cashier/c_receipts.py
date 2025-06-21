@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db import connection
 from django.core.paginator import Paginator
 from datetime import date, datetime
@@ -11,6 +11,9 @@ def create_receipt(request):
     """
     7. Здійснювати продаж товарів (додавання чеків);
     """
+    user_role = request.session.get('user_role')
+    if user_role not in ['cashier1', 'cashier2', 'cashier3', 'cashier4']:
+        return redirect('login')
     if request.method == 'GET':
         card_filter = request.GET.get('card', '')
         product_search = request.GET.get('product_search', '')
@@ -182,6 +185,9 @@ def cashier_receipts(request):
     11. За номером чеку вивести усю інформацію про даний чек, в тому числі
     інформацію про назву, к-сть та ціну товарів, придбаних в даному чеку.
     """
+    user_role = request.session.get('user_role')
+    if user_role not in ['cashier1', 'cashier2', 'cashier3', 'cashier4']:
+        return redirect('login')
     cashier_id = request.session.get('user_id')
 
     page_number = request.GET.get('page', 1)

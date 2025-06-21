@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db import connection
 from django.core.paginator import Paginator
 
@@ -11,6 +11,9 @@ def cashier_store_products(request):
     одиниць товару/ за назвою;
     14. За UPC-товару знайти ціну продажу товару, кількість наявних одиниць товару.
     """
+    user_role = request.session.get('user_role')
+    if user_role not in ['cashier1', 'cashier2', 'cashier3', 'cashier4']:
+        return redirect('login')
     page_number = request.GET.get('page', 1)
     prom_filter = request.GET.get('promotional_product', '')
     upc_search = request.GET.get('UPC', '').strip()

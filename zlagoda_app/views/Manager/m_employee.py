@@ -8,6 +8,8 @@ def manage_employees(request):
     6. Отримати інформацію про усіх працівників, що займають посаду касира,
     відсортованих за прізвищем;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     role_filter = request.GET.get('empl_role', '')
     page_number = request.GET.get('page', 1)
 
@@ -58,6 +60,8 @@ def add_employee(request):
     """
     1. Додавати нові дані про працівників;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == "POST":
         data = request.POST
         query = """
@@ -80,6 +84,8 @@ def edit_employee(request):
     """
     2. Редагувати дані про працівників;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == "POST":
         data = request.POST
         query = """
@@ -105,6 +111,8 @@ def delete_employee(request):
     """
     3. Видаляти дані про працівників;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == 'POST':
         id_employee = request.POST['id_employee']
 

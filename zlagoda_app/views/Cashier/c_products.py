@@ -1,8 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db import connection
 from django.core.paginator import Paginator
 
 def cashier_products(request):
+    user_role = request.session.get('user_role')
+    if user_role not in ['cashier1', 'cashier2', 'cashier3', 'cashier4']:
+        return redirect('login')
     return render(request, 'templates_cashier/cashier_products.html')
 
 
@@ -12,6 +15,9 @@ def cashier_db_products(request):
     4. Здійснити пошук товарів за назвою;
     5. Здійснити пошук товарів, що належать певній категорії, відсортованих за назвою;
     """
+    user_role = request.session.get('user_role')
+    if user_role not in ['cashier1', 'cashier2', 'cashier3', 'cashier4']:
+        return redirect('login')
     category_filter = request.GET.get('category_name', '')
     product_name_filter = request.GET.get('product_name', '').strip()
     page_number = request.GET.get('page', 1)

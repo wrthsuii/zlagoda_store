@@ -16,6 +16,8 @@ def manage_receipts(request):
     21. Визначити загальну кількість одиниць певного товару, проданого за певний
     період часу.
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     page_number = request.GET.get('page', 1)
     cashier_filter = request.GET.get('cashier', '')
     date_from = request.GET.get('start_date')
@@ -182,6 +184,8 @@ def delete_check(request):
     """
     3. Видаляти дані про чеки;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == 'POST':
         check_number = request.POST['check_number']
 
@@ -279,12 +283,16 @@ def receipt_details(request, check_number):
     return render(request, 'templates_manager/receipt_details.html', context)
 
 def advanced_analytics(request):
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     return render(request, "templates_manager/dashb_adv_analytics.html")
 
 def query_1(request):
     """
     *22. Визначити топ-5 товарів місяця, що продаються поміж клієнтів без картки лояльності.
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     selected_date = request.GET.get('month')
     if selected_date:
         try:
@@ -331,6 +339,8 @@ def query_2(request):
     """
     *23. Визначити касирів, які продали усі продукти, які в базі є поточними акційними товарами.
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     with connection.cursor() as cursor:
         cursor.execute("""
                 SELECT P.product_name, C.category_name, SP.products_number

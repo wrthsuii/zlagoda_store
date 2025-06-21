@@ -8,6 +8,9 @@ def cashier_customer_cards(request):
     3. Отримати інформацію про усіх постійних клієнтів, відсортованих за прізвищем;
     6. Здійснити пошук постійних клієнтів за прізвищем;
     """
+    user_role = request.session.get('user_role')
+    if user_role not in ['cashier1', 'cashier2', 'cashier3', 'cashier4']:
+        return redirect('login')
     page_number = request.GET.get('page', 1)
     surname_filter = request.GET.get('surname', '').strip()
 
@@ -55,6 +58,9 @@ def cashier_add_customer_card(request):
     """
     8. Додавати інформацію про постійних клієнтів;
     """
+    user_role = request.session.get('user_role')
+    if user_role not in ['cashier1', 'cashier2', 'cashier3', 'cashier4']:
+        return redirect('login')
     if request.method == "POST":
         data = request.POST
 
@@ -78,6 +84,9 @@ def cashier_edit_customer_card(request):
     """
     8. Редагувати інформацію про постійних клієнтів;
     """
+    user_role = request.session.get('user_role')
+    if user_role not in ['cashier1', 'cashier2', 'cashier3', 'cashier4']:
+        return redirect('login')
     if request.method == "POST":
         data = request.POST
         query = """

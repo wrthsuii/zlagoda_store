@@ -9,6 +9,8 @@ def manage_customer_cards(request):
     12. Отримати інформацію про усіх постійних клієнтів, що мають карту клієнта із
     певним відсотком, посортованих за прізвищем;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     percent_filter = request.GET.get('percent', '')
     page_number = request.GET.get('page', 1)
 
@@ -56,6 +58,8 @@ def add_customer_card(request):
     """
     1. Додавати нові дані про постійних клієнтів;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == "POST":
         data = request.POST
         card_number = str(random.randint(10 ** 12, 10 ** 13 - 1))
@@ -78,6 +82,8 @@ def edit_customer_card(request):
     """
     2. Редагувати дані про постійних клієнтів;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == "POST":
         data = request.POST
         query = """
@@ -101,6 +107,8 @@ def delete_customer_card(request):
     """
     3. Видаляти дані про постійних клієнтів;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == 'POST':
         card_number = request.POST['card_number']
 

@@ -40,6 +40,7 @@ def check_login(request):
         conn.close()
 
         if result:
+            # зберігаються дані користувача сесії
             request.session['user_id'] = result[0]
             request.session['user_role'] = result[1]
             request.session['user_name'] = f"{result[2]} {result[3]}"
@@ -47,6 +48,7 @@ def check_login(request):
             if result[1] == 'manager':
                 return redirect('manager_dashboard')
             else:
+                # інакше відправляє на дашборд касира (всього можливі дві ролі для входу у систему)
                 return redirect('create_receipt')
         else:
             messages.error(request, 'Invalid login or password or you are not authorized to access the system.')

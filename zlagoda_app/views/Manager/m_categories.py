@@ -6,6 +6,8 @@ def manage_categories(request):
     """
     8. Отримати інформацію про усі категорії, відсортовані за назвою;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     page_number = request.GET.get('page', 1)
 
     query = """
@@ -41,6 +43,8 @@ def add_category(request):
     """
     1. Додавати нові дані про категорії;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == "POST":
         data = request.POST
 
@@ -65,6 +69,8 @@ def edit_category(request):
     """
     2. Редагувати дані про категорії;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == "POST":
         data = request.POST
         query = """
@@ -83,6 +89,8 @@ def delete_category(request):
     """
     3. Видаляти дані про категорії;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == 'POST':
         category_number = request.POST['category_number']
 

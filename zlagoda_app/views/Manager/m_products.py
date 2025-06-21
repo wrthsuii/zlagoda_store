@@ -3,6 +3,8 @@ from django.db import connection
 from django.core.paginator import Paginator
 
 def manage_products(request):
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     return render(request, 'templates_manager/manage_products.html')
 
 def manage_product_database(request):
@@ -11,6 +13,8 @@ def manage_product_database(request):
     13. Здійснити пошук усіх товарів, що належать певній категорії,
     відсортованих за назвою;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     category_filter = request.GET.get('category_name', '')
     page_number = request.GET.get('page', 1)
 
@@ -66,6 +70,8 @@ def add_product(request):
     """
     1. Додавати нові дані про товари;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == "POST":
         data = request.POST
         with connection.cursor() as c:
@@ -91,6 +97,8 @@ def edit_product(request):
     """
     2. Редагувати дані про товари;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == "POST":
         data = request.POST
         query = """
@@ -110,6 +118,8 @@ def delete_product(request):
     """
     3. Видаляти дані про товари;
     """
+    if request.session.get('user_role') != 'manager':
+        return redirect('login')
     if request.method == 'POST':
         id_product = request.POST['id_product']
 
