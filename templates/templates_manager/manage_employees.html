@@ -38,6 +38,12 @@
     .table-container {
       overflow-x: auto;
     }
+    .alert {
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid transparent;
+      border-radius: 0.25rem;
+    }
     @media print {
       body, html {
         background: white !important;
@@ -103,6 +109,15 @@
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen">
+    {% if messages %}
+    <div class="max-w-7xl mx-auto px-4">
+      {% for message in messages %}
+        <div class="alert {% if message.tags %}{{ message.tags }}{% endif %} mb-4 p-4 rounded-md">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
   <!-- Navigation -->
   <nav class="bg-yellow-900 text-white px-6 py-4 shadow-lg">
     <div class="max-w-7xl mx-auto flex justify-between items-center">

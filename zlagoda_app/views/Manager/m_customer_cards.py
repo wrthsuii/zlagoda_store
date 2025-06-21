@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.db import connection
 from django.core.paginator import Paginator
+from django.contrib import messages
 import random
 
 def manage_customer_cards(request):
@@ -116,7 +117,12 @@ def delete_customer_card(request):
         DELETE FROM Customer_Card
         WHERE card_number = %s;
         """
-        with connection.cursor() as c:
-            c.execute(query, [card_number])
+        try:
+            with connection.cursor() as c:
+                c.execute(query, [card_number])
+            messages.success(request, f"Картку клієнта #{card_number} успішно видалено.")
+        except Exception as e:
+            messages.error(request, f"Помилка при видаленні картки клієнта #{card_number}: {str(e)}")
+
 
     return redirect('manage_customer_cards')

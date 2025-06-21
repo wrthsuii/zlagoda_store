@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.db import connection
+from django.contrib import messages
 from django.core.paginator import Paginator
 
 def manage_categories(request):
@@ -98,7 +99,11 @@ def delete_category(request):
         DELETE FROM Category
         WHERE category_number = %s;
         """
-        with connection.cursor() as c:
-            c.execute(query, [category_number])
+        try:
+            with connection.cursor() as c:
+                c.execute(query, [category_number])
+            messages.success(request, f"Категорію #{category_number} успішно видалено.")
+        except Exception as e:
+            messages.error(request, f"Помилка при видаленні категорії #{category_number}: {str(e)}")
 
-    return redirect('manage_categories')
+        return redirect('manage_categories')

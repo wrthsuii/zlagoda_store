@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.db import connection
 from django.core.paginator import Paginator
+from django.contrib import messages
 
 def manage_employees(request):
     """
@@ -120,7 +121,11 @@ def delete_employee(request):
         DELETE FROM Employee
         WHERE id_employee = %s;
         """
-        with connection.cursor() as c:
-            c.execute(query, [id_employee])
+        try:
+            with connection.cursor() as c:
+                c.execute(query, [id_employee])
+            messages.success(request, f"Працівника #{id_employee} успішно видалено.")
+        except Exception as e:
+            messages.error(request, f"Помилка при видаленні працівника #{id_employee}: {str(e)}")
 
     return redirect('manage_employees')

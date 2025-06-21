@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.db import connection
 from django.core.paginator import Paginator
+from django.contrib import messages
 
 def manage_store_products(request):
     """
@@ -113,7 +114,11 @@ def delete_store_product(request):
         DELETE FROM Store_Product
         WHERE UPC = %s;
         """
-        with connection.cursor() as c:
-            c.execute(query, [UPC])
+        try:
+            with connection.cursor() as c:
+                c.execute(query, [UPC])
+            messages.success(request, f"Продукт #{UPC} успішно видалено.")
+        except Exception as e:
+            messages.error(request, f"Помилка при видаленні продукта #{UPC}: {str(e)}")
 
     return redirect('manage_store_products')
